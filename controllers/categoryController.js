@@ -178,7 +178,7 @@ exports.categoryList = async (req, res) => {
 exports.getCategory = async (req, res) => {
   try {
     const categorydata = await category
-      .find()
+      .find({ Status: "A" })
       .select("Category Status")
       .sort({ createdAt: -1 });
 
