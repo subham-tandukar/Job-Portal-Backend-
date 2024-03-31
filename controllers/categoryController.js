@@ -174,3 +174,24 @@ exports.categoryList = async (req, res) => {
     });
   }
 };
+
+exports.getCategory = async (req, res) => {
+  try {
+    const categorydata = await category
+      .find()
+      .select("Category Status")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      StatusCode: 200,
+      Message: "success",
+      Values: categorydata.length <= 0 ? null : categorydata,
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+};

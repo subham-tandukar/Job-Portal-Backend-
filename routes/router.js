@@ -14,7 +14,8 @@ router.post("/api/admin/job", jobControllers.job);
 router.get("/api/jobList", jobControllers.jobList);
 router.get("/api/featuredJob", jobControllers.featuredJob);
 router.post("/api/admin/category", categoryControllers.category);
-router.get("/api/categoryList", categoryControllers.categoryList);
+router.get("/api/admin/categoryList", categoryControllers.categoryList);
+router.get("/api/getCategory", categoryControllers.getCategory);
 
 // -------------------------------
 

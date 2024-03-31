@@ -141,6 +141,15 @@ exports.job = async (req, res) => {
       let urlRegex =
         /^(?:https?|ftp):\/\/[\w-]+(?:\.[\w-]+)+[\w.,@?^=%&amp;:/~+#-]*$/;
 
+      // Check if the combination of ComName and JobDesignation already exists
+      let existingJob = await Job.findOne({ ComName, JobDesignation });
+      if (existingJob) {
+        return res.status(422).json({
+          Message:
+            "This Company and Job Designation combination already exists",
+        });
+      }
+
       // Check if the URL matches the regex pattern
       const changeImage = urlRegex.test(ComLogo);
 
