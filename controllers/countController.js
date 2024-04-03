@@ -1,36 +1,35 @@
-const books = require("../models/bookSchema");
-const User = require("../models/adminUserSchema");
-
+const Job = require("../models/jobSchema");
 // --- count ---
-exports.count = async (req, res) => {
+exports.locationCount = async (req, res) => {
   try {
-    // TotalBooks count------------------------
-    const totalBookCt = await books.find();
-    const totalBooks = totalBookCt.length;
+    // Retrieve job data from the database
+    const jobData = await Job.find();
 
-    // BooksAvailable count------------------------
-    const booksAvailableCt = await books.find({ Status: "1" });
-    const booksAvailable = booksAvailableCt.length;
+    // Create a map to store locations and their counts
+    const locationMap = new Map();
 
-    // BookOut count------------------------
-    const booksOutCt = await books.find({ Status: "2" });
-    const bookOut = booksOutCt.length;
+    // Iterate through job data to count locations
+    jobData.forEach((job) => {
+      const location = job.Location;
+      if (locationMap.has(location)) {
+        // Increment count if location exists
+        locationMap.set(location, locationMap.get(location) + 1);
+      } else {
+        // Add location to map if it doesn't exist
+        locationMap.set(location, 1);
+      }
+    });
 
-    // TotalUsers count------------------------
-    const totalUserCt = await User.find();
-    const totalUsers = totalUserCt.length;
+    // Format the data as required
+    const locationData = [];
+    locationMap.forEach((count, location) => {
+      locationData.push({ Location: location, Count: count });
+    });
 
-    res.status(201).json({
+    res.status(200).json({
       StatusCode: 200,
       Message: "success",
-      Values: [
-        {
-          TotalBooks: totalBooks,
-          BooksAvailable: booksAvailable,
-          BookOut: bookOut,
-          TotalUsers: totalUsers,
-        },
-      ],
+      Values: locationData.length <= 0 ? null : locationData,
     });
   } catch (error) {
     res.status(401).json({
