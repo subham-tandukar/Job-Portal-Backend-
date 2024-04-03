@@ -41,6 +41,7 @@ const jobSchema = new mongoose.Schema(
     Location: {
       type: String,
       required: true,
+      trim: true,
     },
     Salary: {
       type: String,
@@ -53,6 +54,7 @@ const jobSchema = new mongoose.Schema(
     JobType: {
       type: String,
       required: true,
+      trim: true,
     },
     IsFeatured: {
       type: String,
