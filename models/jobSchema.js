@@ -56,6 +56,18 @@ const jobSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    Gender: {
+      type: String,
+      required: true,
+    },
+    Experience: {
+      type: String,
+      required: true,
+    },
+    Qualification: {
+      type: String,
+      required: true,
+    },
     IsFeatured: {
       type: String,
       default: "N",

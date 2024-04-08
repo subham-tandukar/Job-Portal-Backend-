@@ -29,6 +29,9 @@ exports.job = async (req, res) => {
     FLAG,
     BulkJobID,
     UserID,
+    Qualification,
+    Experience,
+    Gender,
   } = req.body;
 
   try {
@@ -42,6 +45,9 @@ exports.job = async (req, res) => {
         !Location ||
         !Salary ||
         !CategoryID ||
+        !Qualification ||
+        !Experience ||
+        !Gender ||
         !JobType
       ) {
         return res.status(422).json({
@@ -85,6 +91,9 @@ exports.job = async (req, res) => {
         JobType,
         IsFeatured,
         IsPublished,
+        Qualification,
+        Experience,
+        Gender,
         ComLogo: {
           public_id: comLogo.public_id,
           url: comLogo.secure_url,
@@ -132,6 +141,9 @@ exports.job = async (req, res) => {
         !Location ||
         !Salary ||
         !CategoryID ||
+        !Qualification ||
+        !Experience ||
+        !Gender ||
         !JobType
       ) {
         return res.status(422).json({
@@ -192,6 +204,9 @@ exports.job = async (req, res) => {
           JobType,
           IsFeatured,
           IsPublished,
+          Qualification,
+          Experience,
+          Gender,
           ComLogo: {
             public_id: comLogo.public_id,
             url: comLogo.secure_url,
@@ -211,6 +226,9 @@ exports.job = async (req, res) => {
           JobType,
           IsFeatured,
           IsPublished,
+          Qualification,
+          Experience,
+          Gender,
         };
       }
 
