@@ -9,12 +9,14 @@ exports.category = async (req, res) => {
     if (FLAG === "I") {
       if (!Category) {
         return res.status(422).json({
+          StatusCode: 422,
           Message: "Please fill the required fields",
         });
       }
       let unique = await category.findOne({ Category: Category });
       if (unique) {
         return res.status(422).json({
+          StatusCode: 422,
           Message: "This Category already exist",
         });
       }
@@ -38,6 +40,7 @@ exports.category = async (req, res) => {
     } else if (FLAG === "U") {
       if (!Category) {
         return res.status(422).json({
+          StatusCode: 422,
           Message: "Please fill the required fields",
         });
       }

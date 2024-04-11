@@ -51,6 +51,7 @@ exports.job = async (req, res) => {
         !JobType
       ) {
         return res.status(422).json({
+          StatusCode: 422,
           Message: "Please fill the required fields",
         });
       }
@@ -69,6 +70,7 @@ exports.job = async (req, res) => {
       let existingJob = await Job.findOne({ ComName, JobDesignation });
       if (existingJob) {
         return res.status(422).json({
+          StatusCode: 422,
           Message:
             "This Company and Job Designation combination already exists",
         });
@@ -147,6 +149,7 @@ exports.job = async (req, res) => {
         !JobType
       ) {
         return res.status(422).json({
+          StatusCode: 422,
           Message: "Please fill the required fields",
         });
       }
@@ -157,6 +160,7 @@ exports.job = async (req, res) => {
       let existingJob = await Job.findOne({ ComName, JobDesignation });
       if (existingJob) {
         return res.status(422).json({
+          StatusCode: 422,
           Message:
             "This Company and Job Designation combination already exists",
         });
@@ -352,6 +356,37 @@ exports.jobList = async (req, res) => {
       // For example, if you want to return all jobs without filtering, you can do this:
       jobdata = await Job.find().sort({ createdAt: -1 }).populate("CategoryID");
     }
+    // Transform the jobdata to include CategoryID and Category separately
+    const transformedData = jobdata.map((job) => ({
+      ...job.toObject(),
+      CategoryID: job.CategoryID._id,
+      Category: job.CategoryID.Category,
+    }));
+
+    res.status(200).json({
+      StatusCode: 200,
+      Message: "success",
+      Values: transformedData.length <= 0 ? null : transformedData,
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+};
+
+// --- get job ---
+exports.singleJob = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    // Retrieve jobs filtered by CategoryID and populate the Category field
+    const jobdata = await Job.find({ Slug: slug })
+      .sort({ createdAt: -1 })
+      .populate("CategoryID");
+
     // Transform the jobdata to include CategoryID and Category separately
     const transformedData = jobdata.map((job) => ({
       ...job.toObject(),

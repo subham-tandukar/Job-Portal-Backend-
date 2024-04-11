@@ -31,10 +31,11 @@ exports.locationCount = async (req, res) => {
       Message: "success",
       Values: locationData.length <= 0 ? null : locationData,
     });
-  } catch (error) {
-    res.status(401).json({
-      StatusCode: 400,
-      Message: error,
+  }catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
     });
   }
 };

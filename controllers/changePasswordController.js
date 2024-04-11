@@ -10,7 +10,8 @@ exports.changePassword = async (req, res) => {
 
     // If user doesn't exist, send error response
     if (!user) {
-      return res.status(401).json({
+      return res.status(422).json({
+        StatusCode: 422,
         Message: "User doesn't exist",
       });
     }

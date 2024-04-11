@@ -6,6 +6,7 @@ const router = require("./routes/router");
 const connectDB = require("./db/conn");
 
 var bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(
   bodyParser.urlencoded({
@@ -18,6 +19,7 @@ const port = process.env.PORT || 8009;
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(router);
 
 app.get("/", (req, res) => {

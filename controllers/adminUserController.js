@@ -5,59 +5,47 @@ const cloudinary = require("../cloudinary");
 
 // --- user ---
 exports.user = async (req, res) => {
-  const { Name, Email, Password, FLAG, Profile, UserID, BulkUserID } = req.body;
+  const { Name, Email, Password, FLAG, UserID, BulkUserID } = req.body;
   try {
     if (FLAG === "I") {
       if (!Name || !Email || !Password) {
         return res.status(422).json({
+          StatusCode: 422,
           Message: "Please fill the required fields",
         });
       }
+
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+      if (!regex.test(Email)) {
+        return res.status(422).json({
+          StatusCode: 422,
+          Message: "This is not a valid email format",
+        });
+      }
+
       let user = await User.findOne({ Email: Email });
 
       if (user) {
         return res.status(422).json({
+          StatusCode: 422,
           Message: "This email already exist",
         });
       }
-
-      if (!Profile) {
-        Profile =
-          "https://res.cloudinary.com/de3eu0mvq/image/upload/v1678434591/profile/taztcmb8jl9pxe1yqzd3.png";
-      }
-
-      const profileImg = await cloudinary.uploader.upload(Profile, {
-        folder: "Admin Users",
-      });
 
       const salt = await bcrypt.genSalt(10);
       const secPass = await bcrypt.hash(Password, salt);
 
       user = await User.create({
-        Profile: {
-          public_id: profileImg.public_id,
-          url: profileImg.secure_url,
-        },
         Name: Name,
         Email: Email,
         Password: secPass,
+        Source: "WEB",
       });
-
-      const data = {
-        user: {
-          id: user.id,
-          name: user.Name,
-          email: user.Email,
-        },
-      };
-
-      const authToken = jwt.sign(data, process.env.JWT_SECRET);
 
       try {
         res.status(201).json({
           StatusCode: 200,
           Message: "Success",
-          authToken,
         });
       } catch (error) {
         res.status(500).json({
@@ -96,44 +84,18 @@ exports.user = async (req, res) => {
         });
       }
     } else if (FLAG === "U") {
-      if (!Name || !Profile) {
+      if (!Name) {
         return res.status(422).json({
+          StatusCode: 422,
           Message: "Please fill the required fields",
-        });
-      }
-      let urlRegex =
-        /^(?:https?|ftp):\/\/[\w-]+(?:\.[\w-]+)+[\w.,@?^=%&amp;:/~+#-]*$/;
-
-      // Check if the URL matches the regex pattern
-      const changeImage = urlRegex.test(Profile);
-
-      let userImage;
-
-      if (!changeImage) {
-        const updateUser = await User.findById({ _id: UserID });
-
-        await cloudinary.uploader.destroy(updateUser.Profile.public_id);
-
-        userImage = await cloudinary.uploader.upload(Profile, {
-          folder: "Admin Users",
         });
       }
 
       let update;
 
-      if (changeImage === false) {
-        update = {
-          Name,
-          Profile: {
-            public_id: userImage.public_id,
-            url: userImage.secure_url,
-          },
-        };
-      } else {
-        update = {
-          Name,
-        };
-      }
+      update = {
+        Name,
+      };
 
       await User.findByIdAndUpdate(UserID, update, {
         new: true,
@@ -161,9 +123,6 @@ exports.user = async (req, res) => {
         });
       }
 
-      // Delete the image from Cloudinary
-      await cloudinary.uploader.destroy(deleteUser.Profile.public_id);
-
       try {
         res.status(200).json({
           StatusCode: 200,
@@ -181,16 +140,6 @@ exports.user = async (req, res) => {
       const deleteResults = await User.deleteMany({
         _id: { $in: BulkUserID },
       });
-
-      // Loop through the deleted user IDs and delete their images from Cloudinary
-      const deleteImagePromises = BulkUserID.map(async (userId) => {
-        const user = await User.findById(userId);
-        if (user && user.Profile && user.Profile.public_id) {
-          // Delete image from Cloudinary
-          await cloudinary.uploader.destroy(user.Profile.public_id);
-        }
-      });
-      await Promise.all(deleteImagePromises);
 
       try {
         res.status(200).json({

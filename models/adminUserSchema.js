@@ -3,14 +3,8 @@ const mongoose = require("mongoose");
 const adminUserSchema = new mongoose.Schema(
   {
     Profile: {
-      public_id: {
-        type: String,
-        // required: true,
-      },
-      url: {
-        type: String,
-        // required: true,
-      },
+      type: String,
+      // default:"https://www.iprcenter.gov/image-repository/blank-profile-picture.png/@@images/image.png"
     },
     Name: {
       type: String,
@@ -30,10 +24,20 @@ const adminUserSchema = new mongoose.Schema(
     LastLoggedIn: {
       type: Date, // Field to store the last logged in date
     },
+    Source: {
+      type: String,
+    },
+    LoginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    BannedUntil: {
+      type: Date,
+    },
   },
   { timestamps: true }
 );
 
-const adminUsers = new mongoose.model("adminUser", adminUserSchema);
+const adminUsers = mongoose.model("adminUser", adminUserSchema);
 
 module.exports = adminUsers;
