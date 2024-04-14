@@ -1,6 +1,6 @@
 // const jwt = require("jsonwebtoken");
 
-// export const verifyToken = (req, res, next) => {
+// export const verifyToken = (req, res) => {
 //   const token = req.cookies.access_token;
 
 //   if (!token)
@@ -15,8 +15,8 @@
 //         StatusCode: 403,
 //         Message: "Token is invalid",
 //       });
+//     req.user = user;
 //   });
 
-//   req.user = user;
-//   next();
+//   //   next();
 // };

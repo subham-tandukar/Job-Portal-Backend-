@@ -32,6 +32,7 @@ exports.job = async (req, res) => {
     Qualification,
     Experience,
     Gender,
+    Update,
   } = req.body;
 
   try {
@@ -157,14 +158,14 @@ exports.job = async (req, res) => {
         /^(?:https?|ftp):\/\/[\w-]+(?:\.[\w-]+)+[\w.,@?^=%&amp;:/~+#-]*$/;
 
       // Check if the combination of ComName and JobDesignation already exists
-      let existingJob = await Job.findOne({ ComName, JobDesignation });
-      if (existingJob) {
-        return res.status(422).json({
-          StatusCode: 422,
-          Message:
-            "This Company and Job Designation combination already exists",
-        });
-      }
+      // let existingJob = await Job.findOne({ ComName, JobDesignation });
+      // if (existingJob) {
+      //   return res.status(422).json({
+      //     StatusCode: 422,
+      //     Message:
+      //       "This Company and Job Designation combination already exists",
+      //   });
+      // }
 
       // Check if the URL matches the regex pattern
       const changeImage = urlRegex.test(ComLogo);
@@ -265,7 +266,113 @@ exports.job = async (req, res) => {
       } catch (error) {
         res.status(500).json({
           StatusCode: 500,
-          Message: "Error updating book",
+          Message: "Error updating job",
+          Error: error.message,
+        });
+      }
+    } else if (FLAG === "S") {
+      try {
+        const unique = await Job.findOne({ UserID: UserID });
+        if (!unique) {
+          return res.status(422).json({
+            StatusCode: 422,
+            Message: "User doesn't exist",
+          });
+        }
+        let jobdata;
+
+        // Check if CategoryID is "-1" to retrieve all jobs
+        if (CategoryID === "-1") {
+          jobdata = await Job.find({ UserID: UserID })
+            .sort({ createdAt: -1 })
+            .populate("CategoryID");
+        } else if (CategoryID) {
+          // Retrieve jobs filtered by CategoryID and populate the Category field
+          jobdata = await Job.find({ CategoryID: CategoryID, UserID: UserID })
+            .sort({ createdAt: -1 })
+            .populate("CategoryID");
+        } else {
+        }
+        // // Transform the jobdata to include CategoryID and Category separately
+        // const transformedData = jobdata.map((job) => ({
+        //   ...job.toObject(),
+        //   CategoryID: job.CategoryID._id,
+        //   Category: job.CategoryID.Category,
+        // }));
+
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "success",
+          Count: jobdata.length,
+          Values: jobdata.length <= 0 ? null : jobdata,
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Internal Server Error",
+          Error: error.message,
+        });
+      }
+    } else if (FLAG === "SI") {
+      try {
+        const unique = await Job.findOne({ UserID: UserID });
+        if (!unique) {
+          return res.status(422).json({
+            StatusCode: 422,
+            Message: "User doesn't exist",
+          });
+        }
+        let jobData;
+
+        // Check if Status is "-1" to retrieve all categories
+
+        // Retrieve categories filtered by CategoryID and populate the Category field
+        jobData = await Job.find({
+          _id: JobID,
+          UserID: UserID,
+        })
+          .sort({ createdAt: -1 })
+          .populate("CategoryID");
+
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "success",
+          Count: jobData.length,
+          Values: jobData.length <= 0 ? null : jobData,
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Internal Server Error",
+          Error: error.message,
+        });
+      }
+    } else if (FLAG === "US") {
+      let update;
+      if (Update === "Publish") {
+        update = {
+          IsPublished,
+        };
+      } else if (Update === "Feature") {
+        update = {
+          IsFeatured,
+        };
+      } else {
+      }
+
+      await Job.findByIdAndUpdate(JobID, update, {
+        new: true,
+      });
+
+      try {
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "Success",
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Error updating job status",
           Error: error.message,
         });
       }
@@ -302,9 +409,7 @@ exports.job = async (req, res) => {
 
       // Loop through the deleted user IDs and delete their images from Cloudinary
       const deleteImagePromises = BulkJobID.map(async (jobid) => {
-        console.log("jobid", jobid);
         const job = await Job.findById(jobid);
-        console.log("JOBS", job);
         if (job && job.ComLogo && job.ComLogo.public_id) {
           // Delete image from Cloudinary
           await cloudinary.uploader.destroy(job.ComLogo.public_id);
@@ -357,16 +462,17 @@ exports.jobList = async (req, res) => {
       jobdata = await Job.find().sort({ createdAt: -1 }).populate("CategoryID");
     }
     // Transform the jobdata to include CategoryID and Category separately
-    const transformedData = jobdata.map((job) => ({
-      ...job.toObject(),
-      CategoryID: job.CategoryID._id,
-      Category: job.CategoryID.Category,
-    }));
+    // const transformedData = jobdata.map((job) => ({
+    //   ...job.toObject(),
+    //   CategoryID: job.CategoryID._id,
+    //   Category: job.CategoryID.Category,
+    // }));
 
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
-      Values: transformedData.length <= 0 ? null : transformedData,
+      Count: jobdata.length,
+      Values: jobdata.length <= 0 ? null : jobdata,
     });
   } catch (error) {
     res.status(500).json({
@@ -377,27 +483,78 @@ exports.jobList = async (req, res) => {
   }
 };
 
-// --- get job ---
+// --- get single job ---
 exports.singleJob = async (req, res) => {
   try {
     const { slug } = req.params;
 
+    const unique = await Job.findOne({ Slug: slug });
+    if (!unique) {
+      return res.status(422).json({
+        StatusCode: 422,
+        Message: "Job doesn't exist",
+      });
+    }
     // Retrieve jobs filtered by CategoryID and populate the Category field
     const jobdata = await Job.find({ Slug: slug })
       .sort({ createdAt: -1 })
       .populate("CategoryID");
 
     // Transform the jobdata to include CategoryID and Category separately
-    const transformedData = jobdata.map((job) => ({
-      ...job.toObject(),
-      CategoryID: job.CategoryID._id,
-      Category: job.CategoryID.Category,
-    }));
+    // const transformedData = jobdata.map((job) => ({
+    //   ...job.toObject(),
+    //   CategoryID: job.CategoryID._id,
+    //   Category: job.CategoryID.Category,
+    // }));
 
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
-      Values: transformedData.length <= 0 ? null : transformedData,
+      Values: jobdata.length <= 0 ? null : jobdata,
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+};
+
+// --- get related job ---
+exports.relatedJob = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const alldata = await Job.find()
+      .sort({ createdAt: -1 })
+      .populate("CategoryID");
+    const transformedAllData = alldata.map((job) => ({
+      ...job.toObject(),
+      CategoryID: job.CategoryID._id,
+      Category: job.CategoryID.Category,
+    }));
+    // Retrieve jobs filtered by CategoryID and populate the Category field
+    const jobdata = await Job.find({ Slug: slug })
+      .sort({ createdAt: -1 })
+      .populate("CategoryID");
+
+    // Transform the jobdata to include CategoryID and Category separately
+    // const transformedData = jobdata.map((job) => ({
+    //   ...job.toObject(),
+    //   CategoryID: job.CategoryID._id,
+    //   Category: job.CategoryID.Category,
+    // }));
+
+    const relatedData = transformedAllData.filter(
+      (item) => item.CategoryID !== transformedData[0].CategoryID
+    );
+    console.log("transformedData.CategoryID", transformedData[0].CategoryID);
+
+    res.status(200).json({
+      StatusCode: 200,
+      Message: "success",
+      Values: relatedData.length <= 0 ? null : relatedData,
     });
   } catch (error) {
     res.status(500).json({
@@ -416,16 +573,17 @@ exports.featuredJob = async (req, res) => {
       .populate("CategoryID");
 
     // Transform the jobdata to include CategoryID and Category separately
-    const transformedData = jobdata.map((job) => ({
-      ...job.toObject(),
-      CategoryID: job.CategoryID._id,
-      Category: job.CategoryID.Category,
-    }));
+    // const transformedData = jobdata.map((job) => ({
+    //   ...job.toObject(),
+    //   CategoryID: job.CategoryID._id,
+    //   Category: job.CategoryID.Category,
+    // }));
 
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
-      Values: transformedData.length <= 0 ? null : transformedData,
+      Count: jobdata.length,
+      Values: jobdata.length <= 0 ? null : jobdata,
     });
   } catch (error) {
     res.status(500).json({

@@ -205,3 +205,10 @@ exports.google = async (req, res, next) => {
     });
   }
 };
+
+exports.signOut = async (req, res) => {
+  res.clearCookie("access_token").status(200).json({
+    StatusCode: 200,
+    Message: "Success",
+  });
+};

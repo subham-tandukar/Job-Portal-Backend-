@@ -3,7 +3,8 @@ const cloudinary = require("../cloudinary");
 
 // ---- Category ----
 exports.category = async (req, res) => {
-  const { FLAG, CategoryID, Category, Status, BulkCategoryID } = req.body;
+  const { FLAG, CategoryID, Category, Status, BulkCategoryID, UserID } =
+    req.body;
 
   try {
     if (FLAG === "I") {
@@ -13,7 +14,8 @@ exports.category = async (req, res) => {
           Message: "Please fill the required fields",
         });
       }
-      let unique = await category.findOne({ Category: Category });
+
+      let unique = await category.findOne({ Category, UserID });
       if (unique) {
         return res.status(422).json({
           StatusCode: 422,
@@ -22,6 +24,8 @@ exports.category = async (req, res) => {
       }
 
       const categoryData = new category({
+        UserID,
+        Status,
         Category,
       });
       await categoryData.save();
@@ -48,6 +52,8 @@ exports.category = async (req, res) => {
       let update;
 
       update = {
+        UserID,
+        Status,
         Category,
       };
 
@@ -63,6 +69,83 @@ exports.category = async (req, res) => {
         res.status(500).json({
           StatusCode: 500,
           Message: "Error updating category",
+          Error: error.message,
+        });
+      }
+    } else if (FLAG === "S") {
+      try {
+        const unique = await category.findOne({ UserID: UserID });
+        if (!unique) {
+          return res.status(422).json({
+            StatusCode: 422,
+            Message: "User doesn't exist",
+          });
+        }
+        let categoryData;
+
+        // Check if Status is "-1" to retrieve all categories
+        if (Status === "-1") {
+          categoryData = await category
+            .find({ UserID: UserID })
+            .select("Category Status")
+            .sort({ createdAt: -1 });
+        } else if (Status) {
+          // Retrieve categories filtered by CategoryID and populate the Category field
+          categoryData = await category
+            .find({
+              Status: Status,
+              UserID: UserID,
+            })
+            .select("Category Status")
+            .sort({ createdAt: -1 });
+        } else {
+        }
+
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "success",
+          Count: categoryData.length,
+          Values: categoryData.length <= 0 ? null : categoryData,
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Internal Server Error",
+          Error: error.message,
+        });
+      }
+    } else if (FLAG === "SI") {
+      try {
+        const unique = await category.findOne({ UserID: UserID });
+        if (!unique) {
+          return res.status(422).json({
+            StatusCode: 422,
+            Message: "User doesn't exist",
+          });
+        }
+        let categoryData;
+
+        // Check if Status is "-1" to retrieve all categories
+
+        // Retrieve categories filtered by CategoryID and populate the Category field
+        categoryData = await category
+          .find({
+            _id: CategoryID,
+            UserID: UserID,
+          })
+          .select("Category Status")
+          .sort({ createdAt: -1 });
+
+        res.status(200).json({
+          StatusCode: 200,
+          Message: "success",
+          Count: categoryData.length,
+          Values: categoryData.length <= 0 ? null : categoryData,
+        });
+      } catch (error) {
+        res.status(500).json({
+          StatusCode: 500,
+          Message: "Internal Server Error",
           Error: error.message,
         });
       }
@@ -167,6 +250,7 @@ exports.categoryList = async (req, res) => {
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
+      Count: categorydata.length,
       Values: categorydata.length <= 0 ? null : categorydata,
     });
   } catch (error) {
@@ -188,6 +272,7 @@ exports.getCategory = async (req, res) => {
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
+      Count: categorydata.length,
       Values: categorydata.length <= 0 ? null : categorydata,
     });
   } catch (error) {

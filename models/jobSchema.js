@@ -35,7 +35,7 @@ const jobSchema = new mongoose.Schema(
       required: true,
     },
     ExpiryDate: {
-      type: Date,
+      type: String,
       required: true,
     },
     Location: {

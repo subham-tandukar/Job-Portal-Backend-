@@ -218,6 +218,7 @@ exports.getUser = async (req, res) => {
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
+      Count: userdata.length,
       Values: userdata.length <= 0 ? null : userdata,
     });
   } catch (error) {
