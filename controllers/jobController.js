@@ -293,12 +293,6 @@ exports.job = async (req, res) => {
             .populate("CategoryID");
         } else {
         }
-        // // Transform the jobdata to include CategoryID and Category separately
-        // const transformedData = jobdata.map((job) => ({
-        //   ...job.toObject(),
-        //   CategoryID: job.CategoryID._id,
-        //   Category: job.CategoryID.Category,
-        // }));
 
         res.status(200).json({
           StatusCode: 200,
@@ -461,12 +455,6 @@ exports.jobList = async (req, res) => {
       // For example, if you want to return all jobs without filtering, you can do this:
       jobdata = await Job.find().sort({ createdAt: -1 }).populate("CategoryID");
     }
-    // Transform the jobdata to include CategoryID and Category separately
-    // const transformedData = jobdata.map((job) => ({
-    //   ...job.toObject(),
-    //   CategoryID: job.CategoryID._id,
-    //   Category: job.CategoryID.Category,
-    // }));
 
     res.status(200).json({
       StatusCode: 200,
@@ -500,13 +488,6 @@ exports.singleJob = async (req, res) => {
       .sort({ createdAt: -1 })
       .populate("CategoryID");
 
-    // Transform the jobdata to include CategoryID and Category separately
-    // const transformedData = jobdata.map((job) => ({
-    //   ...job.toObject(),
-    //   CategoryID: job.CategoryID._id,
-    //   Category: job.CategoryID.Category,
-    // }));
-
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
@@ -526,35 +507,32 @@ exports.relatedJob = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const alldata = await Job.find()
-      .sort({ createdAt: -1 })
-      .populate("CategoryID");
-    const transformedAllData = alldata.map((job) => ({
-      ...job.toObject(),
-      CategoryID: job.CategoryID._id,
-      Category: job.CategoryID.Category,
-    }));
-    // Retrieve jobs filtered by CategoryID and populate the Category field
-    const jobdata = await Job.find({ Slug: slug })
-      .sort({ createdAt: -1 })
-      .populate("CategoryID");
+    // Retrieve the current job based on the slug
+    const currentJob = await Job.findOne({ Slug: slug }).populate("CategoryID");
 
-    // Transform the jobdata to include CategoryID and Category separately
-    // const transformedData = jobdata.map((job) => ({
-    //   ...job.toObject(),
-    //   CategoryID: job.CategoryID._id,
-    //   Category: job.CategoryID.Category,
-    // }));
+    if (!currentJob) {
+      return res.status(422).json({
+        StatusCode: 422,
+        Message: "Job doesn't exist",
+      });
+    }
 
-    const relatedData = transformedAllData.filter(
-      (item) => item.CategoryID !== transformedData[0].CategoryID
+    const currentCategory = currentJob.CategoryID._id;
+
+    const categoryJob = await Job.find({
+      CategoryID: currentCategory,
+    }).populate("CategoryID");
+    
+    // Retrieve all jobs of the same category, excluding the current job
+    const relatedJobs = categoryJob.filter(
+      (item) => item._id.toString() !== currentJob._id.toString()
     );
-    console.log("transformedData.CategoryID", transformedData[0].CategoryID);
 
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
-      Values: relatedData.length <= 0 ? null : relatedData,
+      Count: relatedJobs.length,
+      Values: relatedJobs.length <= 0 ? null : relatedJobs,
     });
   } catch (error) {
     res.status(500).json({
@@ -571,13 +549,6 @@ exports.featuredJob = async (req, res) => {
     const jobdata = await Job.find({ IsFeatured: "Y" })
       .sort({ createdAt: -1 })
       .populate("CategoryID");
-
-    // Transform the jobdata to include CategoryID and Category separately
-    // const transformedData = jobdata.map((job) => ({
-    //   ...job.toObject(),
-    //   CategoryID: job.CategoryID._id,
-    //   Category: job.CategoryID.Category,
-    // }));
 
     res.status(200).json({
       StatusCode: 200,
