@@ -482,10 +482,36 @@ exports.singleJob = async (req, res) => {
       .sort({ createdAt: -1 })
       .populate("CategoryID");
 
+    // Retrieve the current job based on the slug
+    const currentJob = await Job.findOne({ Slug: slug }).populate("CategoryID");
+
+    if (!currentJob) {
+      return res.status(422).json({
+        StatusCode: 422,
+        Message: "Job doesn't exist",
+      });
+    }
+
+    const currentCategory = currentJob.CategoryID._id;
+
+    const categoryJob = await Job.find({
+      CategoryID: currentCategory,
+    }).populate("CategoryID");
+
+    // Retrieve all jobs of the same category, excluding the current job
+    const relatedJobs = categoryJob.filter(
+      (item) => item._id.toString() !== currentJob._id.toString()
+    );
+
+    const transformedData = jobdata.map((job) => ({
+      ...job.toObject(),
+      RelatedJobs: relatedJobs.length <= 0 ? null : relatedJobs,
+    }));
+
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
-      Values: jobdata.length <= 0 ? null : jobdata[0],
+      Values: transformedData.length <= 0 ? null : transformedData[0],
     });
   } catch (error) {
     res.status(500).json({
