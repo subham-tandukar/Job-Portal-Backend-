@@ -5,7 +5,7 @@ const cloudinary = require("../cloudinary");
 
 // --- user ---
 exports.user = async (req, res) => {
-  const { Name, Email, Password, FLAG, UserID, BulkUserID } = req.body;
+  const { Role,Name, Email, Password, FLAG, UserID, BulkUserID } = req.body;
   try {
     if (FLAG === "I") {
       if (!Name || !Email || !Password) {
@@ -36,6 +36,7 @@ exports.user = async (req, res) => {
       const secPass = await bcrypt.hash(Password, salt);
 
       user = await User.create({
+        Role:Role,
         Name: Name,
         Email: Email,
         Password: secPass,
@@ -95,6 +96,7 @@ exports.user = async (req, res) => {
 
       update = {
         Name,
+        Role
       };
 
       await User.findByIdAndUpdate(UserID, update, {

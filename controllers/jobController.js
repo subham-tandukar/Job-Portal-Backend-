@@ -485,7 +485,7 @@ exports.singleJob = async (req, res) => {
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
-      Values: jobdata.length <= 0 ? null : jobdata,
+      Values: jobdata.length <= 0 ? null : jobdata[0],
     });
   } catch (error) {
     res.status(500).json({
@@ -516,7 +516,7 @@ exports.relatedJob = async (req, res) => {
     const categoryJob = await Job.find({
       CategoryID: currentCategory,
     }).populate("CategoryID");
-    
+
     // Retrieve all jobs of the same category, excluding the current job
     const relatedJobs = categoryJob.filter(
       (item) => item._id.toString() !== currentJob._id.toString()

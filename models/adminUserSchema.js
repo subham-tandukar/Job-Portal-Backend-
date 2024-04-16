@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 
 const adminUserSchema = new mongoose.Schema(
   {
+    Role: {
+      type: String,
+    },
     Profile: {
       type: String,
       // default:"https://www.iprcenter.gov/image-repository/blank-profile-picture.png/@@images/image.png"

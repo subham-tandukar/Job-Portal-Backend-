@@ -13,7 +13,7 @@ function isValidEmail(email) {
 
 // Handle login logic
 exports.login = async (req, res) => {
-  const { Email, Password } = req.body;
+  const { Email, Password, Role } = req.body;
 
   try {
     // Check if both email and password are provided
@@ -97,30 +97,40 @@ exports.login = async (req, res) => {
         id: user._id,
         name: user.Name,
         email: user.Email,
+        role: user.Role,
       },
     };
     const authToken = jwt.sign(data, process.env.JWT_SECRET);
 
     const expiryDate = new Date(Date.now() + 3600000); // 1 hour
-    res
-      .cookie("access_token", authToken, {
-        httpOnly: true,
-        expires: expiryDate,
-        // secure: true,
-      })
-      .status(200)
-      .json({
-        StatusCode: 200,
-        Message: "success",
-        Login: [
-          {
-            Name: user.Name,
-            Email: user.Email,
-            UserID: user._id,
-            Source: user.Source,
-          },
-        ],
+
+    if (Role === user.Role) {
+      res
+        .cookie("access_token", authToken, {
+          httpOnly: true,
+          expires: expiryDate,
+          // secure: true,
+        })
+        .status(200)
+        .json({
+          StatusCode: 200,
+          Message: "success",
+          Login: [
+            {
+              Name: user.Name,
+              Email: user.Email,
+              UserID: user._id,
+              Source: user.Source,
+              Role: user.Role,
+            },
+          ],
+        });
+    } else {
+      return res.status(422).json({
+        StatusCode: 422,
+        Message: "Invalid role for this user",
       });
+    }
   } catch (error) {
     res.status(500).json({
       StatusCode: 500,
@@ -154,6 +164,7 @@ exports.google = async (req, res, next) => {
               Email: user.Email,
               UserID: user._id,
               Source: user.Source,
+              Role: user.Role,
             },
           ],
         });
@@ -193,6 +204,7 @@ exports.google = async (req, res, next) => {
               Email: user.Email,
               UserID: user._id,
               Source: user.Source,
+              Role: user.Role,
             },
           ],
         });
