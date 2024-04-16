@@ -74,19 +74,12 @@ exports.category = async (req, res) => {
       }
     } else if (FLAG === "S") {
       try {
-        const unique = await category.findOne({ UserID: UserID });
-        if (!unique) {
-          return res.status(422).json({
-            StatusCode: 422,
-            Message: "User doesn't exist",
-          });
-        }
         let categoryData;
 
         // Check if Status is "-1" to retrieve all categories
         if (Status === "-1") {
           categoryData = await category
-            .find({ UserID: UserID })
+            .find()
             .select("Category Status")
             .sort({ createdAt: -1 });
         } else if (Status) {
@@ -94,7 +87,6 @@ exports.category = async (req, res) => {
           categoryData = await category
             .find({
               Status: Status,
-              UserID: UserID,
             })
             .select("Category Status")
             .sort({ createdAt: -1 });
