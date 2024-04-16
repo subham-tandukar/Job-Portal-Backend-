@@ -58,15 +58,12 @@ const jobSchema = new mongoose.Schema(
     },
     Gender: {
       type: String,
-      required: true,
     },
     Experience: {
       type: String,
-      required: true,
     },
     Qualification: {
       type: String,
-      required: true,
     },
     IsFeatured: {
       type: String,

@@ -46,9 +46,6 @@ exports.job = async (req, res) => {
         !Location ||
         !Salary ||
         !CategoryID ||
-        !Qualification ||
-        !Experience ||
-        !Gender ||
         !JobType
       ) {
         return res.status(422).json({
@@ -144,9 +141,6 @@ exports.job = async (req, res) => {
         !Location ||
         !Salary ||
         !CategoryID ||
-        !Qualification ||
-        !Experience ||
-        !Gender ||
         !JobType
       ) {
         return res.status(422).json({
