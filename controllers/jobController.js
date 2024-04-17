@@ -10,6 +10,12 @@ const generateSlug = (text) => {
     .replace(/\s+/g, "-");
 };
 
+function generateUniqueRandomNumber() {
+  const timestamp = Date.now(); // Get current timestamp
+  const randomNum = Math.floor(Math.random() * 1000); // Generate random number
+  return `${timestamp}${randomNum}`; // Concatenate timestamp and random number
+}
+
 // ---- add job ----
 exports.job = async (req, res) => {
   const {
@@ -61,8 +67,14 @@ exports.job = async (req, res) => {
       //   });
       // }
 
+      // Generate unique random number
+      const randomNum = generateUniqueRandomNumber();
+
+      // Generate slug based on unique random number and JobDesignation
+      const slug = generateSlug(`${JobDesignation}-${randomNum}`);
+
       // Generate slug based on ComName and JobDesignation
-      const slug = generateSlug(`${ComName}-${JobDesignation}`);
+      // const slug = generateSlug(`${ComName}-${JobDesignation}`);
 
       // Check if the combination of ComName and JobDesignation already exists
       let existingJob = await Job.findOne({ ComName, JobDesignation });
@@ -172,7 +184,7 @@ exports.job = async (req, res) => {
       // }
 
       // Generate slug based on ComName and JobDesignation
-      const slug = generateSlug(`${ComName}-${JobDesignation}`);
+      // const slug = generateSlug(`${ComName}-${JobDesignation}`);
 
       let comLogo;
 
@@ -194,7 +206,7 @@ exports.job = async (req, res) => {
           UserID,
           ComName,
           JobDesignation,
-          Slug: slug,
+          Slug,
           JobDescription,
           ExpiryDate,
           Location,
@@ -216,7 +228,7 @@ exports.job = async (req, res) => {
           UserID,
           ComName,
           JobDesignation,
-          Slug: slug,
+          Slug,
           JobDescription,
           ExpiryDate,
           Location,
