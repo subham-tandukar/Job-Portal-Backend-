@@ -68,13 +68,13 @@ exports.job = async (req, res) => {
       // }
 
       // Generate unique random number
-      const randomNum = generateUniqueRandomNumber();
+      // const randomNum = generateUniqueRandomNumber();
 
       // Generate slug based on unique random number and JobDesignation
-      const slug = generateSlug(`${JobDesignation}-${randomNum}`);
+      // const slug = generateSlug(`${JobDesignation}-${JobDesignation}`);
 
       // Generate slug based on ComName and JobDesignation
-      // const slug = generateSlug(`${ComName}-${JobDesignation}`);
+      const slug = generateSlug(`${ComName}-${JobDesignation}`);
 
       // Check if the combination of ComName and JobDesignation already exists
       let existingJob = await Job.findOne({ ComName, JobDesignation });
@@ -577,6 +577,27 @@ exports.relatedJob = async (req, res) => {
 
 // get featured job
 exports.featuredJob = async (req, res) => {
+  try {
+    const jobdata = await Job.find({ IsFeatured: "Y" })
+      .sort({ createdAt: -1 })
+      .populate("CategoryID");
+
+    res.status(200).json({
+      StatusCode: 200,
+      Message: "success",
+      Count: jobdata.length,
+      Values: jobdata.length <= 0 ? null : jobdata,
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+};
+// get Intern job
+exports.internJob = async (req, res) => {
   try {
     const jobdata = await Job.find({ IsFeatured: "Y" })
       .sort({ createdAt: -1 })

@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
-const categorySchema = new mongoose.Schema(
+const jobTypeSchema = new mongoose.Schema(
   {
-    Category: {
+    JobType: {
       type: String,
       required: true,
       trim: true,
@@ -15,6 +15,6 @@ const categorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const category = new mongoose.model("category", categorySchema);
+const jobType = new mongoose.model("jobType", jobTypeSchema);
 
-module.exports = category;
+module.exports = jobType;

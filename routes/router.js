@@ -5,6 +5,7 @@ const adminUserControllers = require("../controllers/adminUserController");
 const loginControllers = require("../controllers/loginController");
 const jobControllers = require("../controllers/jobController");
 const categoryControllers = require("../controllers/categoryController");
+const jobTypeControllers = require("../controllers/jobTypeController");
 const countControllers = require("../controllers/countController");
 const { verifyToken } = require("../utils/VerifyAdminUsers.js");
 
@@ -20,8 +21,9 @@ router.get("/api/jobList/:slug", jobControllers.singleJob);
 router.get("/api/relatedJob/:slug", jobControllers.relatedJob);
 router.get("/api/featuredJob", jobControllers.featuredJob);
 router.post("/api/admin/category", categoryControllers.category);
-router.get("/api/admin/categoryList", categoryControllers.categoryList);
 router.get("/api/getCategory", categoryControllers.getCategory);
+router.post("/api/admin/jobType", jobTypeControllers.jobType);
+router.get("/api/getJobType", jobTypeControllers.getJobType);
 router.get("/api/location-count", countControllers.locationCount);
 
 // -------------------------------

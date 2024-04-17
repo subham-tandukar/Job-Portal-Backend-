@@ -1,34 +1,32 @@
-const category = require("../models/categorySchema");
+const jobType = require("../models/jobTypeSchema");
 const cloudinary = require("../cloudinary");
 
-// ---- Category ----
-exports.category = async (req, res) => {
-  const { FLAG, CategoryID, Category, Status, BulkCategoryID } =
-    req.body;
+// ---- jobType ----
+exports.jobType = async (req, res) => {
+  const { FLAG, JobTypeID, JobType, Status, BulkJobTypeID } = req.body;
 
   try {
     if (FLAG === "I") {
-      if (!Category) {
+      if (!JobType) {
         return res.status(422).json({
           StatusCode: 422,
           Message: "Please fill the required fields",
         });
       }
 
-      let unique = await category.findOne({ Category });
+      let unique = await jobType.findOne({ JobType });
       if (unique) {
         return res.status(422).json({
           StatusCode: 422,
-          Message: "This Category already exist",
+          Message: "This job type already exist",
         });
       }
 
-      const categoryData = new category({
-        
+      const jobTypeData = new jobType({
         Status,
-        Category,
+        JobType,
       });
-      await categoryData.save();
+      await jobTypeData.save();
       try {
         res.status(201).json({
           StatusCode: 200,
@@ -37,12 +35,12 @@ exports.category = async (req, res) => {
       } catch (error) {
         res.status(500).json({
           StatusCode: 500,
-          Message: "Error Creating Category",
+          Message: "Error Creating Job Type",
           Error: error.message,
         });
       }
     } else if (FLAG === "U") {
-      if (!Category) {
+      if (!JobType) {
         return res.status(422).json({
           StatusCode: 422,
           Message: "Please fill the required fields",
@@ -53,10 +51,10 @@ exports.category = async (req, res) => {
 
       update = {
         Status,
-        Category,
+        JobType,
       };
 
-      await category.findByIdAndUpdate(CategoryID, update, {
+      await jobType.findByIdAndUpdate(JobTypeID, update, {
         new: true,
       });
       try {
@@ -67,27 +65,27 @@ exports.category = async (req, res) => {
       } catch (error) {
         res.status(500).json({
           StatusCode: 500,
-          Message: "Error updating category",
+          Message: "Error updating job type",
           Error: error.message,
         });
       }
     } else if (FLAG === "S") {
       try {
-        let categoryData;
+        let jobTypeData;
 
         // Check if Status is "-1" to retrieve all categories
         if (Status === "-1") {
-          categoryData = await category
+          jobTypeData = await jobType
             .find()
-            .select("Category Status")
+            .select("JobType Status")
             .sort({ createdAt: -1 });
         } else if (Status) {
-          // Retrieve categories filtered by CategoryID and populate the Category field
-          categoryData = await category
+          // Retrieve categories filtered by jobTypeID and populate the JobType field
+          jobTypeData = await jobType
             .find({
               Status: Status,
             })
-            .select("Category Status")
+            .select("JobType Status")
             .sort({ createdAt: -1 });
         } else {
         }
@@ -95,8 +93,8 @@ exports.category = async (req, res) => {
         res.status(200).json({
           StatusCode: 200,
           Message: "success",
-          Count: categoryData.length,
-          Values: categoryData.length <= 0 ? null : categoryData,
+          Count: jobTypeData.length,
+          Values: jobTypeData.length <= 0 ? null : jobTypeData,
         });
       } catch (error) {
         res.status(500).json({
@@ -107,24 +105,23 @@ exports.category = async (req, res) => {
       }
     } else if (FLAG === "SI") {
       try {
-       
-        let categoryData;
+        let jobTypeData;
 
         // Check if Status is "-1" to retrieve all categories
 
-        // Retrieve categories filtered by CategoryID and populate the Category field
-        categoryData = await category
+        // Retrieve categories filtered by JobTypeID and populate the JobType field
+        jobTypeData = await jobType
           .find({
-            _id: CategoryID,
+            _id: JobTypeID,
           })
-          .select("Category Status")
+          .select("JobType Status")
           .sort({ createdAt: -1 });
 
         res.status(200).json({
           StatusCode: 200,
           Message: "success",
-          Count: categoryData.length,
-          Values: categoryData.length <= 0 ? null : categoryData,
+          Count: jobTypeData.length,
+          Values: jobTypeData.length <= 0 ? null : jobTypeData,
         });
       } catch (error) {
         res.status(500).json({
@@ -137,7 +134,7 @@ exports.category = async (req, res) => {
       const update = {
         Status,
       };
-      await category.findByIdAndUpdate(CategoryID, update, {
+      await jobType.findByIdAndUpdate(JobTypeID, update, {
         new: true,
       });
 
@@ -149,19 +146,19 @@ exports.category = async (req, res) => {
       } catch (error) {
         res.status(500).json({
           StatusCode: 500,
-          Message: "Error updating category status",
+          Message: "Error updating job type status",
           Error: error.message,
         });
       }
     } else if (FLAG === "D") {
-      const deleteCategory = await category.findByIdAndDelete({
-        _id: CategoryID,
+      const deleteJobType = await jobType.findByIdAndDelete({
+        _id: JobTypeID,
       });
 
-      if (!deleteCategory) {
+      if (!deleteJobType) {
         return res.status(404).json({
           StatusCode: 404,
-          Message: "Category not found",
+          Message: "Job type not found",
         });
       }
 
@@ -173,14 +170,14 @@ exports.category = async (req, res) => {
       } catch (error) {
         res.status(500).json({
           StatusCode: 500,
-          Message: "Error deleting category",
+          Message: "Error deleting job type",
           Error: error.message,
         });
       }
     } else if (FLAG === "BD") {
       // Perform bulk delete operation in MongoDB
-      const deleteResults = await category.deleteMany({
-        _id: { $in: BulkCategoryID },
+      const deleteResults = await jobType.deleteMany({
+        _id: { $in: BulkJobTypeID },
       });
 
       try {
@@ -208,19 +205,18 @@ exports.category = async (req, res) => {
   }
 };
 
-
-exports.getCategory = async (req, res) => {
+exports.getJobType = async (req, res) => {
   try {
-    const categorydata = await category
+    const jobTypedata = await jobType
       .find({ Status: "A" })
-      .select("Category Status")
+      .select("JobType Status")
       .sort({ createdAt: -1 });
 
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
-      Count: categorydata.length,
-      Values: categorydata.length <= 0 ? null : categorydata,
+      Count: jobTypedata.length,
+      Values: jobTypedata.length <= 0 ? null : jobTypedata,
     });
   } catch (error) {
     res.status(500).json({
