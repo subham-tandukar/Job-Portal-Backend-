@@ -47,14 +47,13 @@ const jobSchema = new mongoose.Schema(
       type: String,
       default: "Negotiable",
     },
-    CategoryID: {
+    Category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "category",
     },
     JobType: {
-      type: String,
-      required: true,
-      trim: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "jobType",
     },
     Gender: {
       type: String,

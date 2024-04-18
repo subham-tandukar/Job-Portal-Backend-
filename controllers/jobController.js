@@ -27,7 +27,6 @@ exports.job = async (req, res) => {
     ExpiryDate,
     Location,
     Salary,
-    CategoryID,
     Category,
     JobType,
     IsFeatured,
@@ -51,7 +50,7 @@ exports.job = async (req, res) => {
         !ExpiryDate ||
         !Location ||
         !Salary ||
-        !CategoryID ||
+        !Category ||
         !JobType
       ) {
         return res.status(422).json({
@@ -99,7 +98,7 @@ exports.job = async (req, res) => {
         ExpiryDate,
         Location,
         Salary,
-        CategoryID,
+        Category,
         JobType,
         IsFeatured,
         IsPublished,
@@ -152,7 +151,7 @@ exports.job = async (req, res) => {
         !ExpiryDate ||
         !Location ||
         !Salary ||
-        !CategoryID ||
+        !Category ||
         !JobType
       ) {
         return res.status(422).json({
@@ -206,12 +205,11 @@ exports.job = async (req, res) => {
           UserID,
           ComName,
           JobDesignation,
-          Slug,
           JobDescription,
           ExpiryDate,
           Location,
           Salary,
-          CategoryID,
+          Category,
           JobType,
           IsFeatured,
           IsPublished,
@@ -228,12 +226,11 @@ exports.job = async (req, res) => {
           UserID,
           ComName,
           JobDesignation,
-          Slug,
           JobDescription,
           ExpiryDate,
           Location,
           Salary,
-          CategoryID,
+          Category,
           JobType,
           IsFeatured,
           IsPublished,
@@ -278,25 +275,27 @@ exports.job = async (req, res) => {
       }
     } else if (FLAG === "S") {
       try {
-        const unique = await Job.findOne({ UserID: UserID });
-        if (!unique) {
-          return res.status(422).json({
-            StatusCode: 422,
-            Message: "User doesn't exist",
-          });
-        }
+        // const unique = await Job.findOne({ UserID: UserID });
+        // if (!unique) {
+        //   return res.status(422).json({
+        //     StatusCode: 422,
+        //     Message: "User doesn't exist",
+        //   });
+        // }
         let jobdata;
 
-        // Check if CategoryID is "-1" to retrieve all jobs
-        if (CategoryID === "-1") {
-          jobdata = await Job.find({ UserID: UserID })
+        // Check if Category is "-1" to retrieve all jobs
+        if (Category === "-1") {
+          jobdata = await Job.find()
             .sort({ createdAt: -1 })
-            .populate("CategoryID");
-        } else if (CategoryID) {
-          // Retrieve jobs filtered by CategoryID and populate the Category field
-          jobdata = await Job.find({ CategoryID: CategoryID, UserID: UserID })
+            .populate("Category")
+            .populate("JobType");
+        } else if (Category) {
+          // Retrieve jobs filtered by Category and populate the Category field
+          jobdata = await Job.find({ Category: Category, UserID: UserID })
             .sort({ createdAt: -1 })
-            .populate("CategoryID");
+            .populate("Category")
+            .populate("JobType");
         } else {
         }
 
@@ -326,13 +325,14 @@ exports.job = async (req, res) => {
 
         // Check if Status is "-1" to retrieve all categories
 
-        // Retrieve categories filtered by CategoryID and populate the Category field
+        // Retrieve categories filtered by Category and populate the Category field
         jobData = await Job.find({
           _id: JobID,
           UserID: UserID,
         })
           .sort({ createdAt: -1 })
-          .populate("CategoryID");
+          .populate("Category")
+          .populate("JobType");
 
         res.status(200).json({
           StatusCode: 200,
@@ -445,21 +445,28 @@ exports.job = async (req, res) => {
 // --- get job ---
 exports.jobList = async (req, res) => {
   try {
-    const CategoryID = req.query.CategoryID;
+    const Category = req.query.Category;
     let jobdata;
 
-    // Check if CategoryID is "-1" to retrieve all jobs
-    if (CategoryID === "-1") {
-      jobdata = await Job.find().sort({ createdAt: -1 }).populate("CategoryID");
-    } else if (CategoryID) {
-      // Retrieve jobs filtered by CategoryID and populate the Category field
-      jobdata = await Job.find({ CategoryID: CategoryID })
+    // Check if Category is "-1" to retrieve all jobs
+    if (Category === "-1") {
+      jobdata = await Job.find()
         .sort({ createdAt: -1 })
-        .populate("CategoryID");
+        .populate("Category")
+        .populate("JobType");
+    } else if (Category) {
+      // Retrieve jobs filtered by Category and populate the Category field
+      jobdata = await Job.find({ Category: Category })
+        .sort({ createdAt: -1 })
+        .populate("Category")
+        .populate("JobType");
     } else {
-      // Handle the case where no CategoryID is provided
+      // Handle the case where no Category is provided
       // For example, if you want to return all jobs without filtering, you can do this:
-      jobdata = await Job.find().sort({ createdAt: -1 }).populate("CategoryID");
+      jobdata = await Job.find()
+        .sort({ createdAt: -1 })
+        .populate("Category")
+        .populate("JobType");
     }
 
     res.status(200).json({
@@ -489,13 +496,16 @@ exports.singleJob = async (req, res) => {
         Message: "Job doesn't exist",
       });
     }
-    // Retrieve jobs filtered by CategoryID and populate the Category field
+    // Retrieve jobs filtered by Category and populate the Category field
     const jobdata = await Job.find({ Slug: slug })
       .sort({ createdAt: -1 })
-      .populate("CategoryID");
+      .populate("Category")
+      .populate("JobType");
 
     // Retrieve the current job based on the slug
-    const currentJob = await Job.findOne({ Slug: slug }).populate("CategoryID");
+    const currentJob = await Job.findOne({ Slug: slug })
+      .populate("Category")
+      .populate("JobType");
 
     if (!currentJob) {
       return res.status(422).json({
@@ -504,11 +514,13 @@ exports.singleJob = async (req, res) => {
       });
     }
 
-    const currentCategory = currentJob.CategoryID._id;
+    const currentCategory = currentJob.Category._id;
 
     const categoryJob = await Job.find({
-      CategoryID: currentCategory,
-    }).populate("CategoryID");
+      Category: currentCategory,
+    })
+      .populate("Category")
+      .populate("JobType");
 
     // Retrieve all jobs of the same category, excluding the current job
     const relatedJobs = categoryJob.filter(
@@ -540,7 +552,9 @@ exports.relatedJob = async (req, res) => {
     const { slug } = req.params;
 
     // Retrieve the current job based on the slug
-    const currentJob = await Job.findOne({ Slug: slug }).populate("CategoryID");
+    const currentJob = await Job.findOne({ Slug: slug })
+      .populate("Category")
+      .populate("JobType");
 
     if (!currentJob) {
       return res.status(422).json({
@@ -549,11 +563,13 @@ exports.relatedJob = async (req, res) => {
       });
     }
 
-    const currentCategory = currentJob.CategoryID._id;
+    const currentCategory = currentJob.Category._id;
 
     const categoryJob = await Job.find({
-      CategoryID: currentCategory,
-    }).populate("CategoryID");
+      Category: currentCategory,
+    })
+      .populate("Category")
+      .populate("JobType");
 
     // Retrieve all jobs of the same category, excluding the current job
     const relatedJobs = categoryJob.filter(
@@ -580,7 +596,8 @@ exports.featuredJob = async (req, res) => {
   try {
     const jobdata = await Job.find({ IsFeatured: "Y" })
       .sort({ createdAt: -1 })
-      .populate("CategoryID");
+      .populate("Category")
+      .populate("JobType");
 
     res.status(200).json({
       StatusCode: 200,
@@ -599,9 +616,10 @@ exports.featuredJob = async (req, res) => {
 // get Intern job
 exports.internJob = async (req, res) => {
   try {
-    const jobdata = await Job.find({ IsFeatured: "Y" })
+    const jobdata = await Job.find({ "JobType.JobType": "Intern" })
       .sort({ createdAt: -1 })
-      .populate("CategoryID");
+      .populate("Category")
+      .populate("JobType");
 
     res.status(200).json({
       StatusCode: 200,

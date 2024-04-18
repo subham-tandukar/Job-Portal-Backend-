@@ -20,6 +20,7 @@ router.get("/api/jobList", jobControllers.jobList);
 router.get("/api/jobList/:slug", jobControllers.singleJob);
 router.get("/api/relatedJob/:slug", jobControllers.relatedJob);
 router.get("/api/featuredJob", jobControllers.featuredJob);
+router.get("/api/internJob", jobControllers.internJob);
 router.post("/api/admin/category", categoryControllers.category);
 router.get("/api/getCategory", categoryControllers.getCategory);
 router.post("/api/admin/jobType", jobTypeControllers.jobType);
