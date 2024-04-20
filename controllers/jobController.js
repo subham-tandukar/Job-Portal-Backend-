@@ -447,29 +447,12 @@ exports.job = async (req, res) => {
 // --- get job ---
 exports.jobList = async (req, res) => {
   try {
-    const Category = req.query.Category;
     let jobdata;
 
-    // Check if Category is "-1" to retrieve all jobs
-    if (Category === "-1") {
-      jobdata = await Job.find({ IsPublished: "Y" })
-        .sort({ createdAt: -1 })
-        .populate("Category")
-        .populate("JobType");
-    } else if (Category) {
-      // Retrieve jobs filtered by Category and populate the Category field
-      jobdata = await Job.find({ Category: Category, IsPublished: "Y" })
-        .sort({ createdAt: -1 })
-        .populate("Category")
-        .populate("JobType");
-    } else {
-      // Handle the case where no Category is provided
-      // For example, if you want to return all jobs without filtering, you can do this:
-      jobdata = await Job.find({ IsPublished: "Y" })
-        .sort({ createdAt: -1 })
-        .populate("Category")
-        .populate("JobType");
-    }
+    jobdata = await Job.find({ IsPublished: "Y" })
+      .sort({ createdAt: -1 })
+      .populate("Category")
+      .populate("JobType");
 
     res.status(200).json({
       StatusCode: 200,
@@ -643,6 +626,43 @@ exports.categoryJob = async (req, res) => {
     // Retrieve jobs filtered by Category and populate the Category field
     const jobdata = await Job.find({ Category: category, IsPublished: "Y" })
       .sort({ createdAt: -1 })
+      .populate("Category")
+      .populate("JobType");
+
+    res.status(200).json({
+      StatusCode: 200,
+      Message: "success",
+      Count: jobdata.length,
+      Values: jobdata.length <= 0 ? null : jobdata,
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+};
+
+// --- filter job ---
+exports.filterJob = async (req, res) => {
+  try {
+    const { JobType, Category, JobDesignation, ComName, Location } = req.query;
+
+    let sortQuery = { createdAt: -1 };
+    let query = { IsPublished: "Y" };
+
+    // Check each filter parameter individually and add it to the query if it exists
+    if (JobType) query.JobType = JobType;
+    if (Location) query.Location = Location;
+    if (JobDesignation) query.JobDesignation = JobDesignation;
+    if (Category) query.Category = Category;
+    if (ComName) query.ComName = ComName;
+
+    let jobdata;
+
+    jobdata = await Job.find(query)
+      .sort(sortQuery)
       .populate("Category")
       .populate("JobType");
 

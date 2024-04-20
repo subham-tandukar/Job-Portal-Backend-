@@ -4,9 +4,9 @@ const app = express();
 const cors = require("cors");
 const router = require("./routes/router");
 const connectDB = require("./db/conn");
+const cookieParser = require("cookie-parser");
 
 var bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(
   bodyParser.urlencoded({

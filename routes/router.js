@@ -21,6 +21,7 @@ router.get("/api/admin/getUser", adminUserControllers.getUser);
 router.post("/api/admin/job", jobControllers.job);
 router.get("/api/jobList", jobControllers.jobList);
 router.get("/api/jobList/:slug", jobControllers.singleJob);
+router.get("/api/filterJob", jobControllers.filterJob);
 router.get("/api/featuredJob", jobControllers.featuredJob);
 router.get("/api/internJob", jobControllers.internJob);
 router.get("/api/jobLocation/:location", jobControllers.locationJob);
