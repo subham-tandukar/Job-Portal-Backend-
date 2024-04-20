@@ -205,7 +205,7 @@ exports.jobType = async (req, res) => {
   }
 };
 
-exports.getJobType = async (req, res) => {
+exports.jobTypeList = async (req, res) => {
   try {
     const jobTypedata = await jobType
       .find({ Status: "A" })

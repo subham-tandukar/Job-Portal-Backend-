@@ -183,7 +183,7 @@ exports.job = async (req, res) => {
       // }
 
       // Generate slug based on ComName and JobDesignation
-      // const slug = generateSlug(`${ComName}-${JobDesignation}`);
+      const slug = generateSlug(`${ComName}-${JobDesignation}`);
 
       let comLogo;
 
@@ -205,6 +205,7 @@ exports.job = async (req, res) => {
           UserID,
           ComName,
           JobDesignation,
+          Slug: slug,
           JobDescription,
           ExpiryDate,
           Location,
@@ -226,6 +227,7 @@ exports.job = async (req, res) => {
           UserID,
           ComName,
           JobDesignation,
+          Slug: slug,
           JobDescription,
           ExpiryDate,
           Location,
@@ -275,13 +277,13 @@ exports.job = async (req, res) => {
       }
     } else if (FLAG === "S") {
       try {
-        // const unique = await Job.findOne({ UserID: UserID });
-        // if (!unique) {
-        //   return res.status(422).json({
-        //     StatusCode: 422,
-        //     Message: "User doesn't exist",
-        //   });
-        // }
+        const unique = await Job.findOne({ UserID: UserID });
+        if (!unique) {
+          return res.status(422).json({
+            StatusCode: 422,
+            Message: "User doesn't exist",
+          });
+        }
         let jobdata;
 
         // Check if Category is "-1" to retrieve all jobs
@@ -450,20 +452,20 @@ exports.jobList = async (req, res) => {
 
     // Check if Category is "-1" to retrieve all jobs
     if (Category === "-1") {
-      jobdata = await Job.find()
+      jobdata = await Job.find({ IsPublished: "Y" })
         .sort({ createdAt: -1 })
         .populate("Category")
         .populate("JobType");
     } else if (Category) {
       // Retrieve jobs filtered by Category and populate the Category field
-      jobdata = await Job.find({ Category: Category })
+      jobdata = await Job.find({ Category: Category, IsPublished: "Y" })
         .sort({ createdAt: -1 })
         .populate("Category")
         .populate("JobType");
     } else {
       // Handle the case where no Category is provided
       // For example, if you want to return all jobs without filtering, you can do this:
-      jobdata = await Job.find()
+      jobdata = await Job.find({ IsPublished: "Y" })
         .sort({ createdAt: -1 })
         .populate("Category")
         .populate("JobType");
@@ -594,7 +596,7 @@ exports.relatedJob = async (req, res) => {
 // get featured job
 exports.featuredJob = async (req, res) => {
   try {
-    const jobdata = await Job.find({ IsFeatured: "Y" })
+    const jobdata = await Job.find({ IsFeatured: "Y", IsPublished: "Y" })
       .sort({ createdAt: -1 })
       .populate("Category")
       .populate("JobType");
@@ -616,16 +618,20 @@ exports.featuredJob = async (req, res) => {
 // get Intern job
 exports.internJob = async (req, res) => {
   try {
-    const jobdata = await Job.find({ "JobType.JobType": "Intern" })
+    const jobdata = await Job.find()
       .sort({ createdAt: -1 })
       .populate("Category")
       .populate("JobType");
 
+    const internData = jobdata.filter(
+      (item) => item.JobType.JobType === "Intern"
+    );
+
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
-      Count: jobdata.length,
-      Values: jobdata.length <= 0 ? null : jobdata,
+      Count: internData.length,
+      Values: internData.length <= 0 ? null : internData,
     });
   } catch (error) {
     res.status(500).json({

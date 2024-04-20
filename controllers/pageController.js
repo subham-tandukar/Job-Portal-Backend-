@@ -1,34 +1,40 @@
-const category = require("../models/categorySchema");
-const cloudinary = require("../cloudinary");
+const page = require("../models/pageSchema");
 
-// ---- Category ----
-exports.category = async (req, res) => {
-  const { FLAG, CategoryID, Category, Status, BulkCategoryID } =
-    req.body;
+const generateSlug = (text) => {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-");
+};
+
+// ---- Page ----
+exports.page = async (req, res) => {
+  const { FLAG, PageID, Title, Description, BulkPageID } = req.body;
 
   try {
     if (FLAG === "I") {
-      if (!Category) {
+      if (!Title || !Description) {
         return res.status(422).json({
           StatusCode: 422,
           Message: "Please fill the required fields",
         });
       }
+      const slug = generateSlug(Title);
 
-      let unique = await category.findOne({ Category });
+      let unique = await page.findOne({ Title });
       if (unique) {
         return res.status(422).json({
           StatusCode: 422,
-          Message: "This Category already exist",
+          Message: "This Page already exist",
         });
       }
 
-      const categoryData = new category({
-        
-        Status,
-        Category,
+      const pageData = new page({
+        Title,
+        Description,
+        Slug: slug,
       });
-      await categoryData.save();
+      await pageData.save();
       try {
         res.status(201).json({
           StatusCode: 200,
@@ -37,26 +43,27 @@ exports.category = async (req, res) => {
       } catch (error) {
         res.status(500).json({
           StatusCode: 500,
-          Message: "Error Creating Category",
+          Message: "Error Creating Page",
           Error: error.message,
         });
       }
     } else if (FLAG === "U") {
-      if (!Category) {
+      if (!Title || !Description) {
         return res.status(422).json({
           StatusCode: 422,
           Message: "Please fill the required fields",
         });
       }
-
+      const slug = generateSlug(Title);
       let update;
 
       update = {
-        Status,
-        Category,
+        Title,
+        Slug: slug,
+        Description,
       };
 
-      await category.findByIdAndUpdate(CategoryID, update, {
+      await page.findByIdAndUpdate(PageID, update, {
         new: true,
       });
       try {
@@ -67,36 +74,23 @@ exports.category = async (req, res) => {
       } catch (error) {
         res.status(500).json({
           StatusCode: 500,
-          Message: "Error updating category",
+          Message: "Error updating page",
           Error: error.message,
         });
       }
     } else if (FLAG === "S") {
       try {
-        let categoryData;
+        let pageData;
 
         // Check if Status is "-1" to retrieve all categories
-        if (Status === "-1") {
-          categoryData = await category
-            .find()
-            .select("Category Status")
-            .sort({ createdAt: -1 });
-        } else if (Status) {
-          // Retrieve categories filtered by CategoryID and populate the Category field
-          categoryData = await category
-            .find({
-              Status: Status,
-            })
-            .select("Category Status")
-            .sort({ createdAt: -1 });
-        } else {
-        }
+
+        pageData = await page.find().sort({ createdAt: -1 });
 
         res.status(200).json({
           StatusCode: 200,
           Message: "success",
-          Count: categoryData.length,
-          Values: categoryData.length <= 0 ? null : categoryData,
+          Count: pageData.length,
+          Values: pageData.length <= 0 ? null : pageData,
         });
       } catch (error) {
         res.status(500).json({
@@ -107,24 +101,22 @@ exports.category = async (req, res) => {
       }
     } else if (FLAG === "SI") {
       try {
-       
-        let categoryData;
+        let pageData;
 
         // Check if Status is "-1" to retrieve all categories
 
-        // Retrieve categories filtered by CategoryID and populate the Category field
-        categoryData = await category
+        // Retrieve categories filtered by PageID and populate the Category field
+        pageData = await page
           .find({
-            _id: CategoryID,
+            _id: PageID,
           })
-          .select("Category Status")
           .sort({ createdAt: -1 });
 
         res.status(200).json({
           StatusCode: 200,
           Message: "success",
-          Count: categoryData.length,
-          Values: categoryData.length <= 0 ? null : categoryData,
+          Count: pageData.length,
+          Values: pageData.length <= 0 ? null : pageData,
         });
       } catch (error) {
         res.status(500).json({
@@ -133,35 +125,15 @@ exports.category = async (req, res) => {
           Error: error.message,
         });
       }
-    } else if (FLAG === "US") {
-      const update = {
-        Status,
-      };
-      await category.findByIdAndUpdate(CategoryID, update, {
-        new: true,
-      });
-
-      try {
-        res.status(200).json({
-          StatusCode: 200,
-          Message: "Success",
-        });
-      } catch (error) {
-        res.status(500).json({
-          StatusCode: 500,
-          Message: "Error updating category status",
-          Error: error.message,
-        });
-      }
     } else if (FLAG === "D") {
-      const deleteCategory = await category.findByIdAndDelete({
-        _id: CategoryID,
+      const deletePage = await page.findByIdAndDelete({
+        _id: PageID,
       });
 
-      if (!deleteCategory) {
+      if (!deletePage) {
         return res.status(404).json({
           StatusCode: 404,
-          Message: "Category not found",
+          Message: "Page not found",
         });
       }
 
@@ -173,14 +145,14 @@ exports.category = async (req, res) => {
       } catch (error) {
         res.status(500).json({
           StatusCode: 500,
-          Message: "Error deleting category",
+          Message: "Error deleting page",
           Error: error.message,
         });
       }
     } else if (FLAG === "BD") {
       // Perform bulk delete operation in MongoDB
-      const deleteResults = await category.deleteMany({
-        _id: { $in: BulkCategoryID },
+      const deleteResults = await page.deleteMany({
+        _id: { $in: BulkPageID },
       });
 
       try {
@@ -208,19 +180,43 @@ exports.category = async (req, res) => {
   }
 };
 
-
-exports.categoryList = async (req, res) => {
+exports.singlePage = async (req, res) => {
   try {
-    const categorydata = await category
-      .find({ Status: "A" })
-      .select("Category Status")
-      .sort({ createdAt: -1 });
+    const { slug } = req.params;
+
+    const unique = await page.findOne({ Slug: slug });
+    if (!unique) {
+      return res.status(422).json({
+        StatusCode: 422,
+        Message: "Page doesn't exist",
+      });
+    }
+    // Retrieve jobs filtered by Category and populate the Category field
+    const pagedata = await page.find({ Slug: slug }).sort({ createdAt: -1 });
 
     res.status(200).json({
       StatusCode: 200,
       Message: "success",
-      Count: categorydata.length,
-      Values: categorydata.length <= 0 ? null : categorydata,
+      Values: pagedata.length <= 0 ? null : pagedata[0],
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+};
+
+exports.pageList = async (req, res) => {
+  try {
+    const pagedata = await page.find().sort({ createdAt: -1 });
+
+    res.status(200).json({
+      StatusCode: 200,
+      Message: "success",
+      Count: pagedata.length,
+      Values: pagedata.length <= 0 ? null : pagedata,
     });
   } catch (error) {
     res.status(500).json({
