@@ -548,51 +548,6 @@ exports.singleJob = async (req, res) => {
   }
 };
 
-// --- get related job ---
-exports.relatedJob = async (req, res) => {
-  try {
-    const { slug } = req.params;
-
-    // Retrieve the current job based on the slug
-    const currentJob = await Job.findOne({ Slug: slug })
-      .populate("Category")
-      .populate("JobType");
-
-    if (!currentJob) {
-      return res.status(422).json({
-        StatusCode: 422,
-        Message: "Job doesn't exist",
-      });
-    }
-
-    const currentCategory = currentJob.Category._id;
-
-    const categoryJob = await Job.find({
-      Category: currentCategory,
-    })
-      .populate("Category")
-      .populate("JobType");
-
-    // Retrieve all jobs of the same category, excluding the current job
-    const relatedJobs = categoryJob.filter(
-      (item) => item._id.toString() !== currentJob._id.toString()
-    );
-
-    res.status(200).json({
-      StatusCode: 200,
-      Message: "success",
-      Count: relatedJobs.length,
-      Values: relatedJobs.length <= 0 ? null : relatedJobs,
-    });
-  } catch (error) {
-    res.status(500).json({
-      StatusCode: 500,
-      Message: "Internal Server Error",
-      Error: error.message,
-    });
-  }
-};
-
 // get featured job
 exports.featuredJob = async (req, res) => {
   try {
@@ -632,6 +587,70 @@ exports.internJob = async (req, res) => {
       Message: "success",
       Count: internData.length,
       Values: internData.length <= 0 ? null : internData,
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+};
+
+// --- get location wise job ---
+exports.locationJob = async (req, res) => {
+  try {
+    const { location } = req.params;
+    const unique = await Job.findOne({ Location: location });
+    if (!unique) {
+      return res.status(422).json({
+        StatusCode: 422,
+        Message: "Job doesn't exist",
+      });
+    }
+    // Retrieve jobs filtered by Category and populate the Category field
+    const jobdata = await Job.find({ Location: location })
+      .sort({ createdAt: -1 })
+      .populate("Category")
+      .populate("JobType");
+
+    res.status(200).json({
+      StatusCode: 200,
+      Message: "success",
+      Count: jobdata.length,
+      Values: jobdata.length <= 0 ? null : jobdata,
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+};
+
+// --- get category wise job ---
+exports.categoryJob = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const unique = await Job.find({ Category: category });
+    if (!unique) {
+      return res.status(422).json({
+        StatusCode: 422,
+        Message: "Job doesn't exist",
+      });
+    }
+    // Retrieve jobs filtered by Category and populate the Category field
+    const jobdata = await Job.find({ Category: category, IsPublished: "Y" })
+      .sort({ createdAt: -1 })
+      .populate("Category")
+      .populate("JobType");
+
+    res.status(200).json({
+      StatusCode: 200,
+      Message: "success",
+      Count: jobdata.length,
+      Values: jobdata.length <= 0 ? null : jobdata,
     });
   } catch (error) {
     res.status(500).json({

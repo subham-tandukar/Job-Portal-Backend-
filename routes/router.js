@@ -21,9 +21,10 @@ router.get("/api/admin/getUser", adminUserControllers.getUser);
 router.post("/api/admin/job", jobControllers.job);
 router.get("/api/jobList", jobControllers.jobList);
 router.get("/api/jobList/:slug", jobControllers.singleJob);
-router.get("/api/relatedJob/:slug", jobControllers.relatedJob);
 router.get("/api/featuredJob", jobControllers.featuredJob);
 router.get("/api/internJob", jobControllers.internJob);
+router.get("/api/jobLocation/:location", jobControllers.locationJob);
+router.get("/api/jobCategory/:category", jobControllers.categoryJob);
 
 router.post("/api/admin/blog", blogControllers.blog);
 router.get("/api/blogList", blogControllers.blogList);
