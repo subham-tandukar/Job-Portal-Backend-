@@ -9,7 +9,7 @@ const jobTypeControllers = require("../controllers/jobTypeController");
 const countControllers = require("../controllers/countController");
 const blogControllers = require("../controllers/blogController");
 const pageControllers = require("../controllers/pageController");
-const { verifyToken } = require("../utils/VerifyAdminUsers.js");
+const { verifyToken } = require("../utils/VerifyToken");
 
 // ==============================
 router.post("/api/admin/login", loginControllers.login);
@@ -18,7 +18,7 @@ router.post("/api/admin/google", loginControllers.google);
 router.post("/api/admin/user", adminUserControllers.user);
 router.get("/api/admin/getUser", adminUserControllers.getUser);
 
-router.post("/api/admin/job", jobControllers.job);
+router.post("/api/admin/job", verifyToken, jobControllers.job);
 router.get("/api/jobList", jobControllers.jobList);
 router.get("/api/jobList/:slug", jobControllers.singleJob);
 router.get("/api/filterJob", jobControllers.filterJob);

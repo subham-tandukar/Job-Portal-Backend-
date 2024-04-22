@@ -100,9 +100,10 @@ exports.login = async (req, res) => {
         role: user.Role,
       },
     };
-    const authToken = jwt.sign(data, process.env.JWT_SECRET);
-
     const expiryDate = new Date(Date.now() + 3600000); // 1 hour
+    const authToken = jwt.sign(data, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
 
     if (Role === user.Role) {
       res
@@ -117,6 +118,7 @@ exports.login = async (req, res) => {
           Message: "success",
           Login: [
             {
+              Token: authToken,
               Name: user.Name,
               Email: user.Email,
               UserID: user._id,
@@ -160,6 +162,7 @@ exports.google = async (req, res, next) => {
           Message: "success",
           Login: [
             {
+              Token: authToken,
               Name: user.Name,
               Email: user.Email,
               UserID: user._id,
@@ -186,8 +189,21 @@ exports.google = async (req, res, next) => {
       });
       newUser.LastLoggedIn = new Date();
       await newUser.save();
-      const authToken = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+
+      const data = {
+        user: {
+          id: newUser._id,
+          name: newUser.Name,
+          email: newUser.Email,
+          role: newUser.Role,
+        },
+      };
+
+      const authToken = jwt.sign(data, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+      });
       const expiryDate = new Date(Date.now() + 3600000); // 1 hour
+
       res
         .cookie("access_token", authToken, {
           httpOnly: true,
@@ -200,6 +216,7 @@ exports.google = async (req, res, next) => {
           Message: "success",
           Login: [
             {
+              Token: authToken,
               Name: user.Name,
               Email: user.Email,
               UserID: user._id,
