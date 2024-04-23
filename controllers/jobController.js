@@ -1,6 +1,7 @@
 const Job = require("../models/jobSchema");
 const fs = require("fs");
 const cloudinary = require("../cloudinary");
+const application = require("../models/applicationSchema");
 
 // Function to generate slug
 const generateSlug = (text) => {
@@ -133,12 +134,11 @@ exports.job = async (req, res) => {
         res.status(201).json({
           StatusCode: 200,
           Message: "success",
-          Image: jobData.Image,
         });
       } catch (error) {
         res.status(500).json({
           StatusCode: 500,
-          Message: "Error creating book",
+          Message: "Error creating job",
           Error: error.message,
         });
       }
@@ -298,8 +298,23 @@ exports.job = async (req, res) => {
             .sort({ createdAt: -1 })
             .populate("Category")
             .populate("JobType");
-        } else {
         }
+
+        // Get the count of applications for each job
+        const jobIds = jobdata.map((job) => job._id); // Extract job IDs
+        const applicationCounts = await application.aggregate([
+          { $match: { JobID: { $in: jobIds } } }, // Filter applications by job IDs
+          { $group: { _id: "$JobID", count: { $sum: 1 } } }, // Group applications by job and count
+        ]);
+
+        // Map application counts to job data
+        jobdata = jobdata.map((job) => {
+          const countObj = applicationCounts.find((count) =>
+            count._id.equals(job._id)
+          );
+          const count = countObj ? countObj.count : 0;
+          return { ...job.toObject(), NoOfApplications: count };
+        });
 
         res.status(200).json({
           StatusCode: 200,

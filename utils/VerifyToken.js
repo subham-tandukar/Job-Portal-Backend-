@@ -9,7 +9,7 @@ exports.verifyToken = async (req, res, next) => {
     if (!authHeader) {
       return res.status(401).json({
         StatusCode: 401,
-        Message: "No token provided",
+        Message: "Token not provided",
       });
     }
 
@@ -20,14 +20,24 @@ exports.verifyToken = async (req, res, next) => {
         Message: "Invalid token",
       });
     }
-    
+
     // Verify the token
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
       if (err) {
-        return res.status(401).json({
-          StatusCode: 401,
-          Message: "Invalid token",
-        });
+        // Token verification failed
+        if (err.name === "TokenExpiredError") {
+          // Token expired
+          return res.status(401).json({
+            StatusCode: 401,
+            Message: "Token expired",
+          });
+        } else {
+          // Other token verification errors
+          return res.status(401).json({
+            StatusCode: 401,
+            Message: "Invalid token",
+          });
+        }
       }
       req.user = user;
       next(); // Call the next middleware or route handler

@@ -9,6 +9,7 @@ const jobTypeControllers = require("../controllers/jobTypeController");
 const countControllers = require("../controllers/countController");
 const blogControllers = require("../controllers/blogController");
 const pageControllers = require("../controllers/pageController");
+const applicationControllers = require("../controllers/applicationController");
 const { verifyToken } = require("../utils/VerifyToken");
 
 // ==============================
@@ -42,6 +43,18 @@ router.get("/api/pageList", pageControllers.pageList);
 router.get("/api/pageList/:slug", pageControllers.singlePage);
 
 router.get("/api/location-count", countControllers.locationCount);
+
+router.post("/api/applyJob", verifyToken, applicationControllers.applyJob);
+router.get("/api/appliedList", verifyToken, applicationControllers.appliedList);
+
+router.get(
+  "/api/admin/applicationList",
+  applicationControllers.applicationList
+);
+router.get(
+  "/api/admin/singleApplication/:jobId",
+  applicationControllers.singleApplication
+);
 
 // -------------------------------
 
