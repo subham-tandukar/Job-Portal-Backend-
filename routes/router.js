@@ -13,11 +13,13 @@ const applicationControllers = require("../controllers/applicationController");
 const { verifyToken } = require("../utils/VerifyToken");
 
 // ==============================
-router.post("/api/admin/login", loginControllers.login);
-router.get("/api/admin/signOut", loginControllers.signOut);
-router.post("/api/admin/google", loginControllers.google);
+router.post("/api/login", loginControllers.login);
+router.get("/api/signOut", loginControllers.signOut);
+router.post("/api/google", loginControllers.google);
 router.post("/api/admin/user", adminUserControllers.user);
 router.get("/api/admin/getUser", adminUserControllers.getUser);
+router.post("/api/register", adminUserControllers.register);
+router.get("/api/userInfo", verifyToken, adminUserControllers.userInfo);
 
 router.post("/api/admin/job", verifyToken, jobControllers.job);
 router.get("/api/jobList", jobControllers.jobList);

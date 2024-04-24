@@ -5,7 +5,7 @@ const cloudinary = require("../cloudinary");
 
 // --- user ---
 exports.user = async (req, res) => {
-  const { Role,Name, Email, Password, FLAG, UserID, BulkUserID } = req.body;
+  const { Role, Name, Email, Password, FLAG, UserID, BulkUserID } = req.body;
   try {
     if (FLAG === "I") {
       if (!Name || !Email || !Password) {
@@ -36,7 +36,7 @@ exports.user = async (req, res) => {
       const secPass = await bcrypt.hash(Password, salt);
 
       user = await User.create({
-        Role:Role,
+        Role: Role,
         Name: Name,
         Email: Email,
         Password: secPass,
@@ -96,7 +96,7 @@ exports.user = async (req, res) => {
 
       update = {
         Name,
-        Role
+        Role,
       };
 
       await User.findByIdAndUpdate(UserID, update, {
@@ -222,6 +222,84 @@ exports.getUser = async (req, res) => {
       Message: "success",
       Count: userdata.length,
       Values: userdata.length <= 0 ? null : userdata,
+    });
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+};
+
+// register user
+
+exports.register = async (req, res) => {
+  const { Role, Name, Email, Password, FLAG, UserID, BulkUserID } = req.body;
+  try {
+    if (!Name || !Email || !Password) {
+      return res.status(422).json({
+        StatusCode: 422,
+        Message: "Please fill the required fields",
+      });
+    }
+
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
+    if (!regex.test(Email)) {
+      return res.status(422).json({
+        StatusCode: 422,
+        Message: "This is not a valid email format",
+      });
+    }
+
+    let user = await User.findOne({ Email: Email });
+
+    if (user) {
+      return res.status(422).json({
+        StatusCode: 422,
+        Message: "This email already exist",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const secPass = await bcrypt.hash(Password, salt);
+
+    user = await User.create({
+      Role: "Candidate",
+      Name: Name,
+      Email: Email,
+      Password: secPass,
+      Source: "WEB",
+    });
+
+    try {
+      res.status(201).json({
+        StatusCode: 200,
+        Message: "Success",
+      });
+    } catch (error) {
+      res.status(500).json({
+        StatusCode: 500,
+        Message: "Error Creating User",
+        Error: error.message,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+};
+
+exports.userInfo = async (req, res) => {
+  const userInfo = req.user;
+  try {
+    res.status(200).json({
+      StatusCode: 200,
+      Message: "success",
+      Values: userInfo.User,
     });
   } catch (error) {
     res.status(500).json({

@@ -93,40 +93,28 @@ exports.login = async (req, res) => {
 
     // Generate JWT token
     const data = {
-      user: {
-        id: user._id,
-        name: user.Name,
-        email: user.Email,
-        role: user.Role,
+      User: {
+        Id: user._id,
+        Name: user.Name,
+        Email: user.Email,
+        Role: user.Role,
       },
     };
     const expiryDate = new Date(Date.now() + 3600000); // 1 hour
     const authToken = jwt.sign(data, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-
+    res.cookie("th_token", authToken, {
+      httpOnly: true,
+      expires: expiryDate,
+      // secure: true,
+    });
     if (Role === user.Role) {
-      res
-        .cookie("access_token", authToken, {
-          httpOnly: true,
-          expires: expiryDate,
-          // secure: true,
-        })
-        .status(200)
-        .json({
-          StatusCode: 200,
-          Message: "success",
-          Login: [
-            {
-              Token: authToken,
-              Name: user.Name,
-              Email: user.Email,
-              UserID: user._id,
-              Source: user.Source,
-              Role: user.Role,
-            },
-          ],
-        });
+      res.status(200).json({
+        StatusCode: 200,
+        Message: "success",
+        Token: authToken,
+      });
     } else {
       return res.status(422).json({
         StatusCode: 422,
@@ -150,27 +138,16 @@ exports.google = async (req, res, next) => {
     if (user) {
       const authToken = jwt.sign(data, process.env.JWT_SECRET);
       const expiryDate = new Date(Date.now() + 3600000); // 1 hour
-      res
-        .cookie("access_token", authToken, {
-          httpOnly: true,
-          expires: expiryDate,
-          // secure: true,
-        })
-        .status(200)
-        .json({
-          StatusCode: 200,
-          Message: "success",
-          Login: [
-            {
-              Token: authToken,
-              Name: user.Name,
-              Email: user.Email,
-              UserID: user._id,
-              Source: user.Source,
-              Role: user.Role,
-            },
-          ],
-        });
+      res.cookie("th_token", authToken, {
+        httpOnly: true,
+        expires: expiryDate,
+        // secure: true,
+      });
+      res.status(200).json({
+        StatusCode: 200,
+        Message: "success",
+        Token: authToken,
+      });
     } else {
       // Generate random password
       const generatedPassword =
@@ -191,11 +168,11 @@ exports.google = async (req, res, next) => {
       await newUser.save();
 
       const data = {
-        user: {
-          id: newUser._id,
-          name: newUser.Name,
-          email: newUser.Email,
-          role: newUser.Role,
+        User: {
+          Id: newUser._id,
+          Name: newUser.Name,
+          Email: newUser.Email,
+          Role: newUser.Role,
         },
       };
 
@@ -204,27 +181,16 @@ exports.google = async (req, res, next) => {
       });
       const expiryDate = new Date(Date.now() + 3600000); // 1 hour
 
-      res
-        .cookie("access_token", authToken, {
-          httpOnly: true,
-          expires: expiryDate,
-          // secure: true,
-        })
-        .status(200)
-        .json({
-          StatusCode: 200,
-          Message: "success",
-          Login: [
-            {
-              Token: authToken,
-              Name: user.Name,
-              Email: user.Email,
-              UserID: user._id,
-              Source: user.Source,
-              Role: user.Role,
-            },
-          ],
-        });
+      res.cookie("th_token", authToken, {
+        httpOnly: true,
+        expires: expiryDate,
+        // secure: true,
+      });
+      res.status(200).json({
+        StatusCode: 200,
+        Message: "success",
+        Token: authToken,
+      });
     }
   } catch (error) {
     res.status(500).json({
@@ -236,7 +202,7 @@ exports.google = async (req, res, next) => {
 };
 
 exports.signOut = async (req, res) => {
-  res.clearCookie("access_token").status(200).json({
+  res.clearCookie("th_token").status(200).json({
     StatusCode: 200,
     Message: "Success",
   });
