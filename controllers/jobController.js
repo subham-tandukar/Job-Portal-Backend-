@@ -670,7 +670,8 @@ exports.filterJob = async (req, res) => {
     // Check each filter parameter individually and add it to the query if it exists
     if (JobType) query.JobType = JobType;
     if (Location) query.Location = Location;
-    if (JobDesignation) query.JobDesignation = JobDesignation;
+    if (JobDesignation)
+      query.JobDesignation = { $regex: JobDesignation, $options: "i" };
     if (Category) query.Category = Category;
     if (ComName) query.ComName = ComName;
 

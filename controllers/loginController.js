@@ -1,6 +1,6 @@
 const User = require("../models/adminUserSchema");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const { generateToken, authToken } = require("../utils/GenerateToken");
 
 const MAX_LOGIN_ATTEMPTS = 10;
 const BAN_DURATION = 60000; // 1 minute in milliseconds
@@ -100,20 +100,12 @@ exports.login = async (req, res) => {
         Role: user.Role,
       },
     };
-    const expiryDate = new Date(Date.now() + 3600000); // 1 hour
-    const authToken = jwt.sign(data, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
-    res.cookie("th_token", authToken, {
-      httpOnly: true,
-      expires: expiryDate,
-      // secure: true,
-    });
+    generateToken(res, data);
     if (Role === user.Role) {
       res.status(200).json({
         StatusCode: 200,
         Message: "success",
-        Token: authToken,
+        Token: authToken(data),
       });
     } else {
       return res.status(422).json({
@@ -136,17 +128,11 @@ exports.google = async (req, res, next) => {
   try {
     let user = await User.findOne({ Email });
     if (user) {
-      const authToken = jwt.sign(data, process.env.JWT_SECRET);
-      const expiryDate = new Date(Date.now() + 3600000); // 1 hour
-      res.cookie("th_token", authToken, {
-        httpOnly: true,
-        expires: expiryDate,
-        // secure: true,
-      });
+      generateToken(res, data);
       res.status(200).json({
         StatusCode: 200,
         Message: "success",
-        Token: authToken,
+        Token: authToken(data),
       });
     } else {
       // Generate random password
@@ -176,20 +162,11 @@ exports.google = async (req, res, next) => {
         },
       };
 
-      const authToken = jwt.sign(data, process.env.JWT_SECRET, {
-        expiresIn: "1h",
-      });
-      const expiryDate = new Date(Date.now() + 3600000); // 1 hour
-
-      res.cookie("th_token", authToken, {
-        httpOnly: true,
-        expires: expiryDate,
-        // secure: true,
-      });
+      generateToken(res, data);
       res.status(200).json({
         StatusCode: 200,
         Message: "success",
-        Token: authToken,
+        Token: authToken(data),
       });
     }
   } catch (error) {

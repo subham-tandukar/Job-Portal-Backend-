@@ -11,6 +11,7 @@ const blogControllers = require("../controllers/blogController");
 const pageControllers = require("../controllers/pageController");
 const applicationControllers = require("../controllers/applicationController");
 const { verifyToken } = require("../utils/VerifyToken");
+const upload = require("../utils/MulterUpload");
 
 // ==============================
 router.post("/api/login", loginControllers.login);
@@ -47,16 +48,22 @@ router.get("/api/pageList/:slug", pageControllers.singlePage);
 router.get("/api/location-count", countControllers.locationCount);
 
 router.post("/api/applyJob", verifyToken, applicationControllers.applyJob);
+
 router.get("/api/appliedList", verifyToken, applicationControllers.appliedList);
+
+router.get("/uploads/:filename", applicationControllers.viewPdf);
 
 router.get(
   "/api/admin/applicationList",
   applicationControllers.applicationList
 );
+
 router.get(
   "/api/admin/singleApplication/:jobId",
   applicationControllers.singleApplication
 );
+
+router.post("/api/admin/application", applicationControllers.application);
 
 // -------------------------------
 

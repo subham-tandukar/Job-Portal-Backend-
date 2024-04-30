@@ -5,6 +5,7 @@ const cors = require("cors");
 const router = require("./routes/router");
 const connectDB = require("./db/conn");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 
 var bodyParser = require("body-parser");
 app.use(bodyParser.json({ limit: "50mb" }));
@@ -21,6 +22,10 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(router);
+
+// Serve static files from the 'uploads' directory
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
   res.json("server start");
