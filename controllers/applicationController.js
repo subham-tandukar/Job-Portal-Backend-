@@ -12,12 +12,6 @@ exports.applyJob = async (req, res) => {
   const user = req.user;
 
   const userId = user.User.Id;
-  const base64Pdf = CV.split(",")[1];
-  // Decode base64 string to binary
-  const pdfBuffer = Buffer.from(base64Pdf, "base64");
-
-  // Create a unique filename
-  const filename = `pdf_${Date.now()}.pdf`;
 
   try {
     if (!Name || !PhoneNumber || !CV) {
@@ -38,6 +32,13 @@ exports.applyJob = async (req, res) => {
         Message: "You have already applied for this job",
       });
     }
+
+    const base64Pdf = CV.split(",")[1];
+    // Decode base64 string to binary
+    const pdfBuffer = Buffer.from(base64Pdf, "base64");
+
+    // Create a unique filename
+    const filename = `pdf_${Date.now()}.pdf`;
 
     // Upload the CV file to Cloudinary
     const cloudinaryUploadResponse = await cloudinary.uploader.upload(CV, {
