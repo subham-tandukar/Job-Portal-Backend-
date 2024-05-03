@@ -47,11 +47,20 @@ exports.applyJob = async (req, res) => {
 
     const cvUrl = cloudinaryUploadResponse.secure_url;
 
-    // Save the PDF file to the server
-    const filePath = path.join("../tmp", filename);
+    // Choose a writable directory for file uploads
+    const uploadDirectory = path.join(__dirname, "uploads");
+
+    // Ensure the upload directory exists
+    if (!fs.existsSync(uploadDirectory)) {
+      fs.mkdirSync(uploadDirectory);
+    }
+
+    // Save the PDF file to the server's upload directory
+    const filePath = path.join(uploadDirectory, filename);
     fs.writeFileSync(filePath, pdfBuffer);
-    // Return the URL for accessing the uploaded PDF
-    const fileUrl = `${process.env.REACT_APP_URL}/tmp/${filename}`;
+
+    // Construct the URL for accessing the uploaded PDF
+    const fileUrl = `${process.env.REACT_APP_URL}/uploads/${filename}`;
 
     const applicationData = new application({
       Name,
