@@ -25,7 +25,7 @@ app.use(router);
 
 // Serve static files from the 'uploads' directory
 
-app.use("/tmp", express.static(path.join(__dirname, "uploads")));
+app.use("/tmp", express.static(path.join(__dirname, "tmp")));
 
 app.get("/", (req, res) => {
   res.json("server start");
