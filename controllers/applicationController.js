@@ -88,7 +88,7 @@ exports.applyJob = async (req, res) => {
 exports.viewPdf = async (req, res) => {
   try {
     const { filename } = req.params;
-    const filePath = path.join(__dirname, "../tmp", filename);
+    const filePath = path.join(__dirname, "./tmp", filename);
     res.sendFile(filePath);
   } catch (error) {
     res.status(500).json({
