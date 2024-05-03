@@ -48,10 +48,10 @@ exports.applyJob = async (req, res) => {
     const cvUrl = cloudinaryUploadResponse.secure_url;
 
     // Save the PDF file to the server
-    const filePath = path.join("/tmp", filename);
+    const filePath = path.join(__dirname, "../tmp", filename);
     fs.writeFileSync(filePath, pdfBuffer);
     // Return the URL for accessing the uploaded PDF
-    const fileUrl = `${process.env.REACT_APP_URL}/uploads/${filename}`;
+    const fileUrl = `${process.env.REACT_APP_URL}/tmp/${filename}`;
 
     const applicationData = new application({
       Name,
@@ -88,7 +88,7 @@ exports.applyJob = async (req, res) => {
 exports.viewPdf = async (req, res) => {
   try {
     const { filename } = req.params;
-    const filePath = path.join(__dirname, "../uploads", filename);
+    const filePath = path.join(__dirname, "../tmp", filename);
     res.sendFile(filePath);
   } catch (error) {
     res.status(500).json({
