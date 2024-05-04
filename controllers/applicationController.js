@@ -1,7 +1,7 @@
 const application = require("../models/applicationSchema");
 const Job = require("../models/jobSchema");
 const express = require("express");
-const fs = require("fs");
+const fs = require("@cyclic.sh/s3fs");
 const path = require("path");
 const cloudinary = require("../cloudinary");
 
@@ -13,7 +13,7 @@ exports.applyJob = async (req, res) => {
 
   const userId = user.User.Id;
 
-  const file = req.file.filename;
+  // const file = req.file.filename;
 
   try {
     if (!Name || !PhoneNumber || !file) {
@@ -53,14 +53,14 @@ exports.applyJob = async (req, res) => {
     // const filePath = path.join(__dirname, "../uploads", filename);
     // fs.writeFileSync(filePath, pdfBuffer);
     // // Return the URL for accessing the uploaded PDF
-    const fileUrl = `${process.env.REACT_APP_URL}/uploads/${file}`;
+    // const fileUrl = `${process.env.REACT_APP_URL}/uploads/${file}`;
 
     const applicationData = new application({
       Name,
       PhoneNumber,
       Email,
       JobID,
-      CV: fileUrl,
+      CV,
       JobStatus: "P",
       CandidateID: userId,
     });

@@ -11,6 +11,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@cyclic.sh/s3fs": "^1.2.9",
+    "aws-sdk": "^2.1613.0",
     "bcrypt": "^5.1.0",
     "cloudinary": "^1.35.0",
     "cookie-parser": "^1.4.6",
