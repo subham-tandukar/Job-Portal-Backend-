@@ -68,13 +68,13 @@ exports.job = async (req, res) => {
       // }
 
       // Generate unique random number
-      // const randomNum = generateUniqueRandomNumber();
+      const randomNum = generateUniqueRandomNumber();
 
       // Generate slug based on unique random number and JobDesignation
-      // const slug = generateSlug(`${JobDesignation}-${JobDesignation}`);
+      const slug = generateSlug(`${JobDesignation}-${randomNum}`);
 
       // Generate slug based on ComName and JobDesignation
-      const slug = generateSlug(`${ComName}-${JobDesignation}`);
+      // const slug = generateSlug(`${ComName}-${JobDesignation}`);
 
       // Check if the combination of ComName and JobDesignation already exists
       let existingJob = await Job.findOne({ ComName, JobDesignation });
@@ -182,8 +182,13 @@ exports.job = async (req, res) => {
       //   });
       // }
 
+      // Generate unique random number
+      const randomNum = generateUniqueRandomNumber();
+
+      // Generate slug based on unique random number and JobDesignation
+      const slug = generateSlug(`${JobDesignation}-${randomNum}`);
       // Generate slug based on ComName and JobDesignation
-      const slug = generateSlug(`${ComName}-${JobDesignation}`);
+      // const slug = generateSlug(`${ComName}-${JobDesignation}`);
 
       let comLogo;
 

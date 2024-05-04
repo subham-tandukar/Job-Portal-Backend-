@@ -1,7 +1,6 @@
 const application = require("../models/applicationSchema");
 const Job = require("../models/jobSchema");
 const express = require("express");
-const fs = require("@cyclic.sh/s3fs");
 const path = require("path");
 const cloudinary = require("../cloudinary");
 
@@ -103,9 +102,20 @@ exports.viewPdf = async (req, res) => {
 
 exports.applicationList = async (req, res) => {
   try {
+    const { JobStatus,JobDesignation } = req.query;
+
+    let query = {}; // Initialize an empty query object
+
+    if (JobStatus && JobStatus !== "-1") {
+      query.JobStatus = JobStatus; // Filter by specific JobStatus if provided and not -1
+    }
+    if (JobDesignation && JobDesignation !== "-1") {
+      query.JobID = JobDesignation; // Filter by specific JobStatus if provided and not -1
+    }
+
     // Query all applications and populate the 'Job' field
     const applications = await application
-      .find()
+      .find(query)
       .sort({ createdAt: -1 })
       .populate("JobID");
 
@@ -245,17 +255,17 @@ exports.application = async (req, res) => {
         }
 
         // Construct the file path to the associated PDF file
-        const pdfFilePath = path.join(
-          __dirname,
-          "../uploads",
-          pdfFilename.split("/")[4]
-        );
+        // const pdfFilePath = path.join(
+        //   __dirname,
+        //   "../uploads",
+        //   pdfFilename.split("/")[4]
+        // );
 
-        // Check if the file exists before attempting to delete
-        if (fs.existsSync(pdfFilePath)) {
-          // Delete the file synchronously
-          fs.unlinkSync(pdfFilePath);
-        }
+        // // Check if the file exists before attempting to delete
+        // if (fs.existsSync(pdfFilePath)) {
+        //   // Delete the file synchronously
+        //   fs.unlinkSync(pdfFilePath);
+        // }
         res.status(200).json({
           StatusCode: 200,
           Message: "Success",
@@ -275,21 +285,21 @@ exports.application = async (req, res) => {
         });
 
         // Retrieve the list of deleted applications
-        const bulkApplications = await application.find({
-          _id: { $in: BulkApplicationID },
-        });
+        // const bulkApplications = await application.find({
+        //   _id: { $in: BulkApplicationID },
+        // });
 
-        bulkApplications.forEach((app) => {
-          const pdfFilename = app.pdfFilename;
-          if (pdfFilename) {
-            const pdfFilePath = path.join(__dirname, "../uploads", pdfFilename);
-            // Check if the file exists before attempting to delete
-            if (fs.existsSync(pdfFilePath)) {
-              // Delete the file synchronously
-              fs.unlinkSync(pdfFilePath);
-            }
-          }
-        });
+        // bulkApplications.forEach((app) => {
+        //   const pdfFilename = app.pdfFilename;
+        //   if (pdfFilename) {
+        //     const pdfFilePath = path.join(__dirname, "../uploads", pdfFilename);
+        //     // Check if the file exists before attempting to delete
+        //     if (fs.existsSync(pdfFilePath)) {
+        //       // Delete the file synchronously
+        //       fs.unlinkSync(pdfFilePath);
+        //     }
+        //   }
+        // });
 
         res.status(200).json({
           StatusCode: 200,
