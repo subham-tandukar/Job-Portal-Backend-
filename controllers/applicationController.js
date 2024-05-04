@@ -13,8 +13,10 @@ exports.applyJob = async (req, res) => {
 
   const userId = user.User.Id;
 
+  const file = req.file.filename;
+
   try {
-    if (!Name || !PhoneNumber || !CV) {
+    if (!Name || !PhoneNumber || !file) {
       return res.status(422).json({
         StatusCode: 422,
         Message: "Please fill the required fields",
@@ -33,34 +35,25 @@ exports.applyJob = async (req, res) => {
       });
     }
 
-    const base64Pdf = CV.split(",")[1];
-    // Decode base64 string to binary
-    const pdfBuffer = Buffer.from(base64Pdf, "base64");
+    // const base64Pdf = CV.split(",")[1];
+    // // Decode base64 string to binary
+    // const pdfBuffer = Buffer.from(base64Pdf, "base64");
 
-    // Create a unique filename
-    const filename = `pdf_${Date.now()}.pdf`;
+    // // Create a unique filename
+    // const filename = `pdf_${Date.now()}.pdf`;
 
-    // Upload the CV file to Cloudinary
-    const cloudinaryUploadResponse = await cloudinary.uploader.upload(CV, {
-      folder: "cv_files", // Optional: Specify a folder in Cloudinary to organize your CV files
-    });
+    // // Upload the CV file to Cloudinary
+    // const cloudinaryUploadResponse = await cloudinary.uploader.upload(CV, {
+    //   folder: "cv_files", // Optional: Specify a folder in Cloudinary to organize your CV files
+    // });
 
-    const cvUrl = cloudinaryUploadResponse.secure_url;
+    // const cvUrl = cloudinaryUploadResponse.secure_url;
 
-    // Choose a writable directory for file uploads
-    const uploadDirectory = path.join(__dirname, "uploads");
-
-    // Ensure the upload directory exists
-    if (!fs.existsSync(uploadDirectory)) {
-      fs.mkdirSync(uploadDirectory);
-    }
-
-    // Save the PDF file to the server's upload directory
-    const filePath = path.join(uploadDirectory, filename);
-    fs.writeFileSync(filePath, pdfBuffer);
-
-    // Construct the URL for accessing the uploaded PDF
-    const fileUrl = `${process.env.REACT_APP_URL}/uploads/${filename}`;
+    // // Save the PDF file to the server
+    // const filePath = path.join(__dirname, "../uploads", filename);
+    // fs.writeFileSync(filePath, pdfBuffer);
+    // // Return the URL for accessing the uploaded PDF
+    const fileUrl = `${process.env.REACT_APP_URL}/uploads/${file}`;
 
     const applicationData = new application({
       Name,
@@ -97,7 +90,7 @@ exports.applyJob = async (req, res) => {
 exports.viewPdf = async (req, res) => {
   try {
     const { filename } = req.params;
-    const filePath = path.join("../tmp", filename);
+    const filePath = path.join(__dirname, "../uploads", filename);
     res.sendFile(filePath);
   } catch (error) {
     res.status(500).json({

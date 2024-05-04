@@ -3,11 +3,11 @@ const path = require("path");
 // multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "/tmp"));
+    cb(null, path.join(__dirname, "../uploads"));
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, "pdf_" + uniqueSuffix + path.extname(file.originalname)); // Generate unique filename
+    const uniqueSuffix = Date.now();
+    cb(null, "pdf_" + uniqueSuffix + "_" + file.originalname); // Generate unique filename
   },
 });
 const upload = multer({
