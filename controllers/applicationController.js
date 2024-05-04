@@ -16,7 +16,7 @@ exports.applyJob = async (req, res) => {
   // const file = req.file.filename;
 
   try {
-    if (!Name || !PhoneNumber || !file) {
+    if (!Name || !PhoneNumber || !CV) {
       return res.status(422).json({
         StatusCode: 422,
         Message: "Please fill the required fields",
