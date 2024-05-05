@@ -102,7 +102,7 @@ exports.viewPdf = async (req, res) => {
 
 exports.applicationList = async (req, res) => {
   try {
-    const { JobStatus,JobDesignation } = req.query;
+    const { JobStatus, JobDesignation } = req.query;
 
     let query = {}; // Initialize an empty query object
 
@@ -144,9 +144,17 @@ exports.singleApplication = async (req, res) => {
   try {
     const jobId = req.params.jobId; // Extract jobId from request parameters
 
+    const { JobStatus } = req.query;
+
+    let query = { JobID: jobId }; // Initialize an empty query object
+
+    if (JobStatus && JobStatus !== "-1") {
+      query.JobStatus = JobStatus; // Filter by specific JobStatus if provided and not -1
+    }
+
     // Query applications for the specified job
     const applications = await application
-      .find({ JobID: jobId })
+      .find(query)
       .sort({ createdAt: -1 })
       .populate("JobID");
 
@@ -213,9 +221,9 @@ exports.application = async (req, res) => {
   try {
     if (FLAG === "US") {
       const update = {
-        Status,
+        JobStatus,
       };
-      await category.findByIdAndUpdate(CategoryID, update, {
+      await application.findByIdAndUpdate(ApplicationID, update, {
         new: true,
       });
 
@@ -227,7 +235,7 @@ exports.application = async (req, res) => {
       } catch (error) {
         res.status(500).json({
           StatusCode: 500,
-          Message: "Error updating category status",
+          Message: "Error updating aplication status",
           Error: error.message,
         });
       }

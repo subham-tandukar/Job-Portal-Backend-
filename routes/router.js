@@ -55,15 +55,23 @@ router.get("/uploads/:filename", applicationControllers.viewPdf);
 
 router.get(
   "/api/admin/applicationList",
+  verifyToken,
   applicationControllers.applicationList
 );
 
 router.get(
   "/api/admin/singleApplication/:jobId",
+  verifyToken,
   applicationControllers.singleApplication
 );
 
-router.post("/api/admin/application", applicationControllers.application);
+router.post(
+  "/api/admin/application",
+  verifyToken,
+  applicationControllers.application
+);
+
+router.get("/api/admin/dashboardCount", countControllers.dashboardCount);
 
 // -------------------------------
 

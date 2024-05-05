@@ -1,4 +1,5 @@
 const Job = require("../models/jobSchema");
+const Application = require("../models/applicationSchema");
 // --- count ---
 exports.locationCount = async (req, res) => {
   try {
@@ -31,7 +32,47 @@ exports.locationCount = async (req, res) => {
       Message: "success",
       Values: locationData.length <= 0 ? null : locationData,
     });
-  }catch (error) {
+  } catch (error) {
+    res.status(500).json({
+      StatusCode: 500,
+      Message: "Internal Server Error",
+      Error: error.message,
+    });
+  }
+};
+
+exports.dashboardCount = async (req, res) => {
+  try {
+    // Total Jobs count------------------------
+    const totalJobCt = await Job.find({ IsPublished: "Y" });
+    const totalJob = totalJobCt.length;
+
+    // Application count------------------------
+    const applicationCt = await Application.find();
+    const application = applicationCt.length;
+
+    // Approved count------------------------
+    const approvedCt = await Application.find({ JobStatus: "A" });
+    const approved = approvedCt.length;
+
+    // Rejected count------------------------
+    const rejectedCt = await Application.find({ JobStatus: "R" });
+    const rejected = rejectedCt.length;
+
+    res.status(200).json({
+      StatusCode: 200,
+      Message: "success",
+      Values: [
+        {
+          Jobs: totalJob,
+          Applications: application,
+          Approved: approved,
+          Rejected: rejected,
+        },
+      ],
+    });
+
+  } catch (error) {
     res.status(500).json({
       StatusCode: 500,
       Message: "Internal Server Error",
