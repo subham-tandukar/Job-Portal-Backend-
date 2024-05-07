@@ -106,6 +106,12 @@ exports.login = async (req, res) => {
         StatusCode: 200,
         Message: "success",
         Token: authToken(data),
+        Values: {
+          UserID: user._id,
+          Name: user.Name,
+          Email: user.Email,
+          Role: user.Role,
+        },
       });
     } else {
       return res.status(422).json({
@@ -167,6 +173,12 @@ exports.google = async (req, res, next) => {
         StatusCode: 200,
         Message: "success",
         Token: authToken(data),
+        Values: {
+          UserID: user._id,
+          Name: user.Name,
+          Email: user.Email,
+          Role: user.Role,
+        },
       });
     }
   } catch (error) {

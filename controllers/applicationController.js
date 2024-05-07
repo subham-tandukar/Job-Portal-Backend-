@@ -3,6 +3,7 @@ const Job = require("../models/jobSchema");
 const express = require("express");
 const path = require("path");
 const cloudinary = require("../cloudinary");
+const sendMail = require("../utils/SendMail");
 
 // ---- apply form ----
 exports.applyJob = async (req, res) => {
@@ -64,7 +65,14 @@ exports.applyJob = async (req, res) => {
       CandidateID: userId,
     });
     await applicationData.save();
+
     try {
+      const messageBody = `<p>Hello <b>${Name}</b>,</p>
+      <strong>Thank you for applying for the job. We have received your application and will review it shortly.</strong>
+      <p>Best regards,<br/>Talent Hospitality</p>`;
+
+      sendMail("Thank you for applying!", messageBody, Email);
+
       res.status(201).json({
         StatusCode: 200,
         Message: "success",
@@ -223,11 +231,37 @@ exports.application = async (req, res) => {
       const update = {
         JobStatus,
       };
+
+      const appliedApplication = await application.findById({
+        _id: ApplicationID,
+      });
+      const appliedJob = await Job.findById({ _id: appliedApplication.JobID });
       await application.findByIdAndUpdate(ApplicationID, update, {
         new: true,
       });
 
       try {
+        const subject = `Application Update: ${appliedJob.JobDesignation}`;
+        let messageBody;
+
+        if (JobStatus === "A") {
+          messageBody = `
+            <p>Hello <strong>${appliedApplication.Name}</strong>,</p>
+            <p>Congratulations! Your application for the job ${appliedJob.JobDesignation} has been accepted.</p>
+            <p>We are excited to have you join our team. Please reach out if you have any questions.</p>
+            <p>Best regards,<br/>Talent Hospitality</p>
+          `;
+        } else if (JobStatus === "R") {
+          messageBody = `
+            <p>Hello <strong>${appliedApplication.Name}</strong>,</p>
+            <p>We regret to inform you that your application for the job ${appliedJob.JobDesignation} was not successful.</p>
+            <p>Thank you for your interest and time. We encourage you to apply for future opportunities.</p>
+            <p>Best regards,<br/>Talent Hospitality</p>
+          `;
+        }
+
+        await sendMail(subject, messageBody, appliedApplication.Email);
+
         res.status(200).json({
           StatusCode: 200,
           Message: "Success",
