@@ -107,6 +107,7 @@ exports.login = async (req, res) => {
         Message: "success",
         Token: authToken(data),
         Values: {
+          Token: authToken(data),
           UserID: user._id,
           Name: user.Name,
           Email: user.Email,
@@ -174,6 +175,7 @@ exports.google = async (req, res, next) => {
         Message: "success",
         Token: authToken(data),
         Values: {
+          Token: authToken(data),
           UserID: user._id,
           Name: user.Name,
           Email: user.Email,
