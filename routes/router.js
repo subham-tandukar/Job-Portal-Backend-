@@ -10,6 +10,7 @@ const countControllers = require("../controllers/countController");
 const blogControllers = require("../controllers/blogController");
 const pageControllers = require("../controllers/pageController");
 const applicationControllers = require("../controllers/applicationController");
+const advertisementControllers = require("../controllers/advertisementController");
 const { verifyToken } = require("../utils/VerifyToken");
 const upload = require("../utils/MulterUpload");
 
@@ -72,6 +73,13 @@ router.post(
 );
 
 router.get("/api/admin/dashboardCount", countControllers.dashboardCount);
+
+//
+router.post("/api/admin/advertisement", advertisementControllers.advertisement);
+router.get(
+  "/api/advertisementList",
+  advertisementControllers.advertisementList
+);
 
 // -------------------------------
 

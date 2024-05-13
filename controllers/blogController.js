@@ -47,6 +47,7 @@ exports.blog = async (req, res) => {
       });
 
       const blogData = new Blog({
+        Status,
         Title,
         Description,
         Auther,
@@ -118,6 +119,7 @@ exports.blog = async (req, res) => {
 
       if (oldImg !== Image) {
         update = {
+          Status,
           Title,
           Auther,
           Category,
@@ -130,6 +132,7 @@ exports.blog = async (req, res) => {
         };
       } else {
         update = {
+          Status,
           Title,
           Auther,
           Category,
@@ -343,7 +346,7 @@ exports.blog = async (req, res) => {
       // Loop through the deleted user IDs and delete their images from Cloudinary
       const deleteImagePromises = BulkBlogID.map(async (blogid) => {
         const blog = await Blog.findById(blogid);
-        if (blog && blog.ComLogo && blog.ComLogo.public_id) {
+        if (blog && blog.Image && blog.Image.public_id) {
           // Delete image from Cloudinary
           await cloudinary.uploader.destroy(blog.Image.public_id);
         }

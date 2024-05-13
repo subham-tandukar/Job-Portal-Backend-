@@ -172,7 +172,7 @@ exports.user = async (req, res) => {
 exports.getUser = async (req, res) => {
   try {
     const last = req.query.last;
-    const isVerified = req.query.isVerified;
+    const role = req.query.role;
     const sortby = req.query.sortby;
 
     const searchQuery = req.query.search || ""; // Extract the search query parameter from the request, default to an empty string if not provided
@@ -202,12 +202,14 @@ exports.getUser = async (req, res) => {
     }
 
     // Adding verification status filtering to the query
-    if (isVerified === "-1") {
+    if (role === "-1") {
       // No filter by verification status
-    } else if (isVerified === "Y") {
-      query.Status = "Verified";
-    } else if (isVerified === "N") {
-      query.Status = "Unverified";
+    } else if (role === "A") {
+      query.Role = "Admin";
+    } else if (role === "E") {
+      query.Role = "Employer";
+    } else if (role === "C") {
+      query.Role = "Candidate";
     }
     // Retrieve users based on the constructed query
     const userdata = await User.find(query)
