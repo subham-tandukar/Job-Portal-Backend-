@@ -48,7 +48,12 @@ router.get("/api/pageList/:slug", pageControllers.singlePage);
 
 router.get("/api/location-count", countControllers.locationCount);
 
-router.post("/api/applyJob", verifyToken, applicationControllers.applyJob);
+router.post(
+  "/api/applyJob",
+  verifyToken,
+  upload.single("CV"),
+  applicationControllers.applyJob
+);
 
 router.get("/api/appliedList", verifyToken, applicationControllers.appliedList);
 

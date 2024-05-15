@@ -1,9 +1,10 @@
 const application = require("../models/applicationSchema");
 const Job = require("../models/jobSchema");
 const express = require("express");
-const path = require("path");
 const cloudinary = require("../cloudinary");
 const sendMail = require("../utils/SendMail");
+const fs = require("fs");
+const path = require("path");
 
 // ---- apply form ----
 exports.applyJob = async (req, res) => {
@@ -12,11 +13,8 @@ exports.applyJob = async (req, res) => {
   const user = req.user;
 
   const userId = user.User.Id;
-
-  // const file = req.file.filename;
-
   try {
-    if (!Name || !PhoneNumber || !CV) {
+    if (!Name || !PhoneNumber || !req.file) {
       return res.status(422).json({
         StatusCode: 422,
         Message: "Please fill the required fields",
@@ -29,6 +27,13 @@ exports.applyJob = async (req, res) => {
       CandidateID: userId,
     });
     if (existingApplication) {
+      const pdfFilePath = path.join(__dirname, "../uploads", req.file.filename);
+
+      // Check if the file exists before attempting to delete
+      if (fs.existsSync(pdfFilePath)) {
+        // Delete the file synchronously
+        fs.unlinkSync(pdfFilePath);
+      }
       return res.status(422).json({
         StatusCode: 422,
         Message: "You have already applied for this job",
@@ -52,15 +57,15 @@ exports.applyJob = async (req, res) => {
     // // Save the PDF file to the server
     // const filePath = path.join(__dirname, "../uploads", filename);
     // fs.writeFileSync(filePath, pdfBuffer);
-    // // Return the URL for accessing the uploaded PDF
-    // const fileUrl = `${process.env.REACT_APP_URL}/uploads/${file}`;
+    // Return the URL for accessing the uploaded PDF
+    const fileUrl = `${process.env.REACT_APP_URL}/uploads/${req.file.filename}`;
 
     const applicationData = new application({
       Name,
       PhoneNumber,
       Email,
       JobID,
-      CV,
+      CV: fileUrl,
       JobStatus: "P",
       CandidateID: userId,
     });
@@ -297,17 +302,17 @@ exports.application = async (req, res) => {
         }
 
         // Construct the file path to the associated PDF file
-        // const pdfFilePath = path.join(
-        //   __dirname,
-        //   "../uploads",
-        //   pdfFilename.split("/")[4]
-        // );
+        const pdfFilePath = path.join(
+          __dirname,
+          "../uploads",
+          pdfFilename.split("/")[4]
+        );
 
-        // // Check if the file exists before attempting to delete
-        // if (fs.existsSync(pdfFilePath)) {
-        //   // Delete the file synchronously
-        //   fs.unlinkSync(pdfFilePath);
-        // }
+        // Check if the file exists before attempting to delete
+        if (fs.existsSync(pdfFilePath)) {
+          // Delete the file synchronously
+          fs.unlinkSync(pdfFilePath);
+        }
         res.status(200).json({
           StatusCode: 200,
           Message: "Success",
@@ -327,21 +332,21 @@ exports.application = async (req, res) => {
         });
 
         // Retrieve the list of deleted applications
-        // const bulkApplications = await application.find({
-        //   _id: { $in: BulkApplicationID },
-        // });
+        const bulkApplications = await application.find({
+          _id: { $in: BulkApplicationID },
+        });
 
-        // bulkApplications.forEach((app) => {
-        //   const pdfFilename = app.pdfFilename;
-        //   if (pdfFilename) {
-        //     const pdfFilePath = path.join(__dirname, "../uploads", pdfFilename);
-        //     // Check if the file exists before attempting to delete
-        //     if (fs.existsSync(pdfFilePath)) {
-        //       // Delete the file synchronously
-        //       fs.unlinkSync(pdfFilePath);
-        //     }
-        //   }
-        // });
+        bulkApplications.forEach((app) => {
+          const pdfFilename = app.pdfFilename;
+          if (pdfFilename) {
+            const pdfFilePath = path.join(__dirname, "../uploads", pdfFilename);
+            // Check if the file exists before attempting to delete
+            if (fs.existsSync(pdfFilePath)) {
+              // Delete the file synchronously
+              fs.unlinkSync(pdfFilePath);
+            }
+          }
+        });
 
         res.status(200).json({
           StatusCode: 200,
